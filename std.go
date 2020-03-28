@@ -11,10 +11,12 @@ func NewStdHandler(logger *log.Logger, lvl Level) Handler {
 		if lvl < level {
 			return
 		}
+
 		switch level {
 		case LevelEmergency, LevelAlert:
 			logger.Fatal(msg, fields)
 		}
+
 		logger.Print(msg, fields)
 	}
 }
