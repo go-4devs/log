@@ -1,5 +1,4 @@
 /*
-Package processor
-add processor for the logger
+Package processor add processors for the logger
 */
 package processor
