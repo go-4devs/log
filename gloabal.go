@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	global = New(NewStdHandler(log.New(os.Stderr, "", LstdFlags)), LevelDebug))
+	global = New(NewStdHandler(log.New(os.Stderr, "", log.LstdFlags), LevelDebug))
 )
 
 func SetLogger(l *Logger) {

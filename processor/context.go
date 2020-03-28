@@ -3,10 +3,13 @@ package processor
 import (
 	"context"
 	"fmt"
+
+	"github.com/go-4devs/log"
 )
 
-func Context(key fmt.Stringer) Processor {
-	return func(ctx context.Context) Field {
-		return Field{key.String(), ctx.Value(key)}
+// Context add field by context key
+func Context(key fmt.Stringer) log.Processor {
+	return func(ctx context.Context) log.Field {
+		return log.Field{Key: key.String(), Value: ctx.Value(key)}
 	}
 }
