@@ -17,6 +17,6 @@ func NewStdHandler(logger *log.Logger, lvl Level) Handler {
 			logger.Fatal("level=", level.String(), " msg=\"", msg, "\"", fields)
 		}
 
-		logger.Print("level=", level.String(), " msg=\"", msg, "\" ", fields)
+		logger.Print("level=", level.String(), " msg=\"", msg, "\"", fields)
 	}
 }

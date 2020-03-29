@@ -17,15 +17,15 @@ func TestFields(t *testing.T) {
 	buf := &bytes.Buffer{}
 	logger := log.New(buf, "", 0)
 	log := New(NewStdHandler(logger, LevelDebug))
-	success := "level: info; msg: message; err: file already exists; version: 0.1.0; obj: {id};\n"
+	success := "level=info msg=\"message\" err=file already exists version=0.1.0 obj={id:uid}\n"
 
 	log.InfoKV(ctx, "message",
 		"err", os.ErrExist,
 		Field{Key: "version", Value: "0.1.0"},
-		"obj", rObj{id: "id"},
+		"obj", rObj{id: "uid"},
 	)
 
 	if success != buf.String() {
-		t.Errorf("invalid value got:'%s' expect:'%s'", buf, success)
+		t.Errorf("invalid value\n got:%s\n exp:%s", buf, success)
 	}
 }
