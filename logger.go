@@ -33,7 +33,7 @@ type Field struct {
 
 // String implent stringer
 func (f Field) String() string {
-	return fmt.Sprintf("%s: %v;", f.Key, f.Value)
+	return fmt.Sprintf(" %s=%+v", f.Key, f.Value)
 }
 
 // Option configure logger
@@ -96,7 +96,7 @@ func (l *Logger) fields(ctx context.Context, args ...interface{}) []Field {
 
 		i++
 
-		key, val := args[i], args[i+1]
+		key, val := args[i-1], args[i]
 		if keyStr, ok := key.(string); ok {
 			fields = append(fields, Field{Key: keyStr, Value: val})
 			continue
