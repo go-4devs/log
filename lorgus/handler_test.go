@@ -17,8 +17,8 @@ func TestNew(t *testing.T) {
 	lrg := logrus.New()
 	lrg.SetOutput(buf)
 
-	handler := New(lrg, log.LevelDebug)
-	expect := "level=info msg=\"handle logrus message\"\n"
+	handler := New(lrg, log.LevelDebug, WithLevel(log.LevelNotice, logrus.ErrorLevel))
+	expect := "level=error msg=\"handle logrus message\"\n"
 
 	handler(ctx, log.LevelNotice, "handle logrus message", log.Fields{})
 

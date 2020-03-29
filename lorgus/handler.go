@@ -13,8 +13,8 @@ type Levels map[log.Level]lrg.Level
 // Option configure levels
 type Option func(Levels)
 
-// SetLevel set lorgus leve to log level
-func SetLevel(level log.Level, loggusLevel lrg.Level) Option {
+// WithLevel set lorgus level to log level
+func WithLevel(level log.Level, loggusLevel lrg.Level) Option {
 	return func(l Levels) {
 		l[level] = loggusLevel
 	}
