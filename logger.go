@@ -33,7 +33,7 @@ type Field struct {
 
 // String implent stringer
 func (f Field) String() string {
-	return fmt.Sprintf(" %s: %v;", f.Key, f.Value)
+	return fmt.Sprintf(" %s=%+v", f.Key, f.Value)
 }
 
 // Option configure logger
