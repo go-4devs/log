@@ -40,6 +40,11 @@ func New(logger *lrg.Logger, level log.Level, opts ...Option) log.Handler {
 	logger.SetLevel(levels[level])
 
 	return func(ctx context.Context, level log.Level, msg string, fields log.Fields) {
-		logger.WithFields(lrg.Fields(fields)).Log(levels[level], msg)
+		lrgFields := make(lrg.Fields, len(fields))
+		for _, field := range fields {
+			lrgFields[field.Key] = field.Value
+		}
+
+		logger.WithFields(lrgFields).Log(levels[level], msg)
 	}
 }
