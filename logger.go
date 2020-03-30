@@ -22,7 +22,7 @@ func (f Fields) String() string {
 		str[i] = field.String()
 	}
 
-	return strings.Join(str, "")
+	return strings.Join(str, " ")
 }
 
 // Field struct
@@ -33,40 +33,23 @@ type Field struct {
 
 // String implent stringer
 func (f Field) String() string {
-	return fmt.Sprintf(" %s=%+v", f.Key, f.Value)
+	return fmt.Sprintf("%s=%+v", f.Key, f.Value)
 }
-
-// Option configure logger
-type Option func(*Logger)
 
 // New create new logger by handler
-func New(handler Handler, opts ...Option) *Logger {
-	l := &Logger{
-		handler: handler,
-	}
-
-	for _, opt := range opts {
-		opt(l)
-	}
-
-	return l
-}
-
-// WithProcessor configure process
-func WithProcessor(opts ...Processor) Option {
-	return func(l *Logger) {
-		l.processors = append(l.processors, opts...)
+func New(handler Handler, mw ...Middleware) *Logger {
+	return &Logger{
+		handler: NewHandler(handler, mw...),
 	}
 }
 
 // Logger log
 type Logger struct {
-	handler    Handler
-	processors []Processor
+	handler Handler
 }
 
 func (l *Logger) log(ctx context.Context, level Level, args ...interface{}) {
-	l.handler(ctx, level, fmt.Sprint(args...), l.fields(ctx))
+	l.handler(ctx, level, fmt.Sprint(args...), nil)
 }
 
 func (l *Logger) logKV(ctx context.Context, level Level, msg string, args ...interface{}) {
@@ -78,10 +61,7 @@ func (l *Logger) logf(ctx context.Context, level Level, format string, args ...i
 }
 
 func (l *Logger) fields(ctx context.Context, args ...interface{}) []Field {
-	fields := make([]Field, 0, len(args)+len(l.processors))
-	for _, p := range l.processors {
-		fields = append(fields, p(ctx))
-	}
+	fields := make([]Field, 0, len(args))
 
 	for i := 0; i < len(args); i++ {
 		if f, ok := args[i].(Field); ok {
