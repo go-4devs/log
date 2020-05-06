@@ -1,4 +1,4 @@
-# log
+# package log moved to https://gitoa.ru/go-4devs/log
 
 [![Build Status](https://travis-ci.org/go-4devs/log.svg?branch=master)](https://travis-ci.org/go-4devs/log)
 [![codecov](https://codecov.io/gh/go-4devs/log/branch/master/graph/badge.svg)](https://codecov.io/gh/go-4devs/log)
