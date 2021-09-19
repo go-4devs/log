@@ -3,13 +3,19 @@ package log
 import (
 	"context"
 	"fmt"
-	"path/filepath"
+	"os"
 	"runtime"
 	"time"
+
+	"gitoa.ru/go-4devs/log/entry"
+	"gitoa.ru/go-4devs/log/field"
+	"gitoa.ru/go-4devs/log/level"
 )
 
+var _ Middleware = WithClosure
+
 // Middleware handle.
-type Middleware func(ctx context.Context, level Level, msg string, fields Fields, handler Logger)
+type Middleware func(ctx context.Context, e *entry.Entry, handler Logger) (int, error)
 
 // With add middleware to logger.
 func With(logger Logger, mw ...Middleware) Logger {
@@ -17,95 +23,129 @@ func With(logger Logger, mw ...Middleware) Logger {
 	case 0:
 		return logger
 	case 1:
-		return func(ctx context.Context, level Level, msg string, fields Fields) {
-			mw[0](ctx, level, msg, fields, logger)
+		return func(ctx context.Context, entry *entry.Entry) (int, error) {
+			return mw[0](ctx, entry, logger)
 		}
 	}
 
 	lastI := len(mw) - 1
 
-	return func(ctx context.Context, level Level, msg string, fields Fields) {
+	return func(ctx context.Context, e *entry.Entry) (int, error) {
 		var (
-			chainHandler func(ctx context.Context, level Level, msg string, fields Fields)
+			chainHandler func(context.Context, *entry.Entry) (int, error)
 			curI         int
 		)
 
-		chainHandler = func(currentCtx context.Context, currentLevel Level, currentMsg string, currentFields Fields) {
+		chainHandler = func(currentCtx context.Context, currentEntry *entry.Entry) (int, error) {
 			if curI == lastI {
-				logger(currentCtx, currentLevel, currentMsg, currentFields)
-				return
+				return logger(currentCtx, currentEntry)
 			}
 			curI++
-			mw[curI](currentCtx, currentLevel, currentMsg, currentFields, chainHandler)
+			n, err := mw[curI](currentCtx, currentEntry, chainHandler)
 			curI--
+
+			return n, err
 		}
 
-		mw[0](ctx, level, msg, fields, chainHandler)
+		return mw[0](ctx, e, chainHandler)
 	}
 }
 
 // WithLevel sets log level.
-func WithLevel(lvl Level) Middleware {
-	return func(ctx context.Context, level Level, msg string, fields Fields, handler Logger) {
-		if level <= lvl {
-			handler(ctx, level, msg, append(fields, Field{Key: "level", Value: level}))
+func WithLevel(key string, lvl level.Level) Middleware {
+	return func(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
+		if e.Level().Enabled(lvl) {
+			return handler(ctx, e.AddString(key, e.Level().String()))
+		}
+
+		return 0, nil
+	}
+}
+
+func WithClosure(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
+	for i, field := range e.Fields() {
+		if field.Type().IsAny() {
+			if f, ok := field.AsInterface().(func() string); ok {
+				e.Fields().Set(i, field.Key().String(f()))
+			}
 		}
 	}
+
+	return handler(ctx, e)
 }
 
 // KeyValue add field by const key value.
 func KeyValue(key string, value interface{}) Middleware {
-	return func(ctx context.Context, level Level, msg string, fields Fields, handler Logger) {
-		handler(ctx, level, msg, append(fields, Field{Key: key, Value: value}))
+	return func(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
+		return handler(ctx, e.AddAny(key, value))
 	}
 }
 
 // GoVersion add field by go version.
 func GoVersion(key string) Middleware {
-	return func(ctx context.Context, level Level, msg string, fields Fields, handler Logger) {
-		handler(ctx, level, msg, append(fields, Field{Key: key, Value: runtime.Version()}))
+	return func(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
+		return handler(ctx, e.AddString(key, runtime.Version()))
 	}
 }
 
 // WithContext add field by context key.
 func WithContextValue(keys ...fmt.Stringer) Middleware {
-	return func(ctx context.Context, level Level, msg string, fields Fields, handler Logger) {
-		ctxFields := make(Fields, len(keys))
-		for i, key := range keys {
-			ctxFields[i] = Field{Key: key.String(), Value: ctx.Value(key)}
+	return func(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
+		for _, key := range keys {
+			e = e.AddAny(key.String(), ctx.Value(key))
 		}
 
-		handler(ctx, level, msg, append(fields, ctxFields...))
+		return handler(ctx, e)
 	}
 }
 
 // WithCaller adds called file.
-func WithCaller(calldepth int, short bool) Middleware {
-	return func(ctx context.Context, level Level, msg string, fields Fields, handler Logger) {
-		_, file, line, ok := runtime.Caller(calldepth)
-		if !ok {
-			file, line = "???", 0
-		}
+func WithCaller(key string, depth int, full bool) Middleware {
+	const offset = 2
 
-		if short && ok {
-			file = filepath.Base(file)
-		}
-
-		handler(ctx, level, msg, append(fields, NewField("caller", fmt.Sprint(file, ":", line))))
+	return func(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
+		return handler(ctx, e.AddString(key, entry.Caller(depth*offset, full)))
 	}
 }
 
 // WithTime adds time.
-func WithTime(format string) Middleware {
-	return func(ctx context.Context, level Level, msg string, fields Fields, handler Logger) {
-		handler(ctx, level, msg, append(fields, NewField("time", time.Now().Format(format))))
+func WithTime(key, format string) Middleware {
+	return func(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
+		return handler(ctx, e.Add(field.Time(key, time.Now())))
 	}
 }
 
 // WithMetrics adds handle metrics.
-func WithMetrics(metrics func(level Level)) Middleware {
-	return func(ctx context.Context, level Level, msg string, fields Fields, handler Logger) {
-		go metrics(level)
-		handler(ctx, level, msg, fields)
+func WithMetrics(metrics func(level level.Level)) Middleware {
+	return func(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
+		go metrics(e.Level())
+
+		return handler(ctx, e)
+	}
+}
+
+// WithExit exit by level.
+func WithExit(level level.Level) Middleware {
+	return func(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
+		n, err := handler(ctx, e)
+
+		if e.Level().Is(level) {
+			os.Exit(1)
+		}
+
+		return n, err
+	}
+}
+
+// WithPanic panic by level.
+func WithPanic(level level.Level) Middleware {
+	return func(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
+		n, err := handler(ctx, e)
+
+		if e.Level().Is(level) {
+			panic(e.String())
+		}
+
+		return n, err
 	}
 }

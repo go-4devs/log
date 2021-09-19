@@ -2,18 +2,27 @@ package log
 
 import (
 	"context"
+	"io"
+
+	"gitoa.ru/go-4devs/log/field"
+	"gitoa.ru/go-4devs/log/level"
 )
 
 //nolint:gochecknoglobals
-var global = With(New(), WithLevel(LevelDebug))
+var global = With(New(),
+	WithCaller("caller", 1, false),
+	WithLevel("level", level.Debug),
+	WithExit(level.Alert),
+	WithPanic(level.Emergency),
+)
 
 // SetLogger sets global used logger. This function is not thread-safe.
 func SetLogger(l Logger) {
 	global = l
 }
 
-// GetLogger return global logger.
-func GetLogger() Logger {
+// Log return global logger.
+func Log() Logger {
 	return global
 }
 
@@ -87,43 +96,83 @@ func Panicln(args ...interface{}) {
 	global.Panicln(args...)
 }
 
-// EmergKV log by emergency level and key-values.
-func EmergKV(ctx context.Context, msg string, args ...interface{}) {
+// EmergKVs sugared log by emergency level and key-values.
+func EmergKVs(ctx context.Context, msg string, args ...interface{}) {
+	global.EmergKVs(ctx, msg, args...)
+}
+
+// AlertKVs sugared log by alert level and key-values.
+func AlertKVs(ctx context.Context, msg string, args ...interface{}) {
+	global.AlertKVs(ctx, msg, args...)
+}
+
+// CritKVs sugared log by critcal level and key-values.
+func CritKVs(ctx context.Context, msg string, args ...interface{}) {
+	global.CritKVs(ctx, msg, args...)
+}
+
+// ErrKVs sugared log by error level and key-values.
+func ErrKVs(ctx context.Context, msg string, args ...interface{}) {
+	global.ErrKVs(ctx, msg, args...)
+}
+
+// WarnKVs sugared log by warning level and key-values.
+func WarnKVs(ctx context.Context, msg string, args ...interface{}) {
+	global.WarnKVs(ctx, msg, args...)
+}
+
+// NoticeKVs sugared log by notice level and key-values.
+func NoticeKVs(ctx context.Context, msg string, args ...interface{}) {
+	global.NoticeKVs(ctx, msg, args...)
+}
+
+// InfoKVs sugared log by info level and key-values.
+func InfoKVs(ctx context.Context, msg string, args ...interface{}) {
+	global.InfoKVs(ctx, msg, args...)
+}
+
+// DebugKVs sugared log by debug level and key-values.
+func DebugKVs(ctx context.Context, msg string, args ...interface{}) {
+	global.DebugKVs(ctx, msg, args...)
+}
+
+// EmergKV  log by emergency level and key-values.
+func EmergKV(ctx context.Context, msg string, args ...field.Field) {
 	global.EmergKV(ctx, msg, args...)
 }
 
 // AlertKV log by alert level and key-values.
-func AlertKV(ctx context.Context, msg string, args ...interface{}) {
+func AlertKV(ctx context.Context, msg string, args ...field.Field) {
 	global.AlertKV(ctx, msg, args...)
 }
 
 // CritKV log by critcal level and key-values.
-func CritKV(ctx context.Context, msg string, args ...interface{}) {
+func CritKV(ctx context.Context, msg string, args ...field.Field) {
 	global.CritKV(ctx, msg, args...)
 }
 
 // ErrKV log by error level and key-values.
-func ErrKV(ctx context.Context, msg string, args ...interface{}) {
+func ErrKV(ctx context.Context, msg string, args ...field.Field) {
 	global.ErrKV(ctx, msg, args...)
 }
 
 // WarnKV log by warning level and key-values.
-func WarnKV(ctx context.Context, msg string, args ...interface{}) {
+func WarnKV(ctx context.Context, msg string, args ...field.Field) {
 	global.WarnKV(ctx, msg, args...)
 }
 
 // NoticeKV log by notice level and key-values.
-func NoticeKV(ctx context.Context, msg string, args ...interface{}) {
+func NoticeKV(ctx context.Context, msg string, args ...field.Field) {
 	global.NoticeKV(ctx, msg, args...)
 }
 
 // InfoKV log by info level and key-values.
-func InfoKV(ctx context.Context, msg string, args ...interface{}) {
+func InfoKV(ctx context.Context, msg string, args ...field.Field) {
 	global.InfoKV(ctx, msg, args...)
 }
 
 // DebugKV log by debug level and key-values.
-func DebugKV(ctx context.Context, msg string, args ...interface{}) {
+func DebugKV(ctx context.Context, msg string, args ...field.Field) {
 	global.DebugKV(ctx, msg, args...)
 }
 
@@ -180,4 +229,8 @@ func Fatalf(format string, args ...interface{}) {
 // Panicf log by emergency level and arguments without context.
 func Panicf(format string, args ...interface{}) {
 	global.Panicf(format, args...)
+}
+
+func Writer(ctx context.Context, level level.Level) io.Writer {
+	return global.Writer(ctx, level)
 }
