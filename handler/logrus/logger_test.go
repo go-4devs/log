@@ -13,6 +13,8 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 	buf := &bytes.Buffer{}
 
@@ -23,7 +25,7 @@ func TestNew(t *testing.T) {
 		DisableTimestamp: true,
 	})
 
-	handler := logrus.New(logrus.WithLogrus(lgrus))
+	handler := logrus.New(lgrus)
 	expect := "level=info msg=\"handle logrus message\"\n"
 
 	if _, err := handler(ctx, entry.New(entry.WithLevel(level.Info), entry.WithMessage("handle logrus message"))); err != nil {

@@ -5,8 +5,8 @@ import (
 
 	"gitoa.ru/go-4devs/log/entry"
 	"gitoa.ru/go-4devs/log/level"
-	"go.opentelemetry.io/otel/api/trace"
-	"go.opentelemetry.io/otel/label"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -40,17 +40,17 @@ func levels(lvl level.Level) Level {
 
 func addEvent(ctx context.Context, e *entry.Entry) {
 	span := trace.SpanFromContext(ctx)
-	attrs := make([]label.KeyValue, 0, e.Fields().Len()+levelFields)
+	attrs := make([]attribute.KeyValue, 0, e.Fields().Len()+levelFields)
 
 	lvl := levels(e.Level())
 	attrs = append(attrs,
-		label.String(fieldSeverityText, lvl.String()),
-		label.Int(fieldSeverityNumber, int(lvl)),
+		attribute.String(fieldSeverityText, lvl.String()),
+		attribute.Int(fieldSeverityNumber, int(lvl)),
 	)
 
 	for _, field := range e.Fields() {
-		attrs = append(attrs, label.String(string(field.Key()), field.Value().String()))
+		attrs = append(attrs, attribute.String(string(field.Key()), field.Value().String()))
 	}
 
-	span.AddEvent(ctx, e.Message(), attrs...)
+	span.AddEvent(e.Message(), trace.WithAttributes(attrs...))
 }

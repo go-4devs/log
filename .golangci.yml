@@ -9,18 +9,25 @@ linters-settings:
       min-occurrences: 2
     gocyclo:
       min-complexity: 15
-    golint:
-      min-confidence: 0
     govet:
       check-shadowing: true
     lll:
       line-length: 140
-    maligned:
+    fieldalignment:
       suggest-new: true
     misspell:
       locale: US  
     exhaustive:
       default-signifies-exhaustive: true
+    tagliatelle:
+      case:
+        use-field-name: true
+        rules:
+          json: snake
+          yaml: camel
+          xml: camel
+          bson: camel
+          avro: snake
 
 linters:
     enable-all: true
@@ -31,3 +38,4 @@ issues:
     - path: _test\.go
       linters:
         - gomnd
+        - exhaustivestruct

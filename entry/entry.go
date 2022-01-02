@@ -13,9 +13,9 @@ const (
 
 type Option func(*Entry)
 
-func WithCapacity(cap int) Option {
+func WithCapacity(c int) Option {
 	return func(e *Entry) {
-		e.fields = make(field.Fields, 0, cap+1)
+		e.fields = make(field.Fields, 0, c+1)
 	}
 }
 
@@ -41,6 +41,7 @@ func New(opts ...Option) *Entry {
 	e := &Entry{
 		fields: make(field.Fields, 0, defaultCap+1),
 		level:  level.Debug,
+		msg:    "",
 	}
 
 	for _, opt := range opts {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -23,10 +24,15 @@ func New(opts ...Option) Logger {
 	return func(_ context.Context, entry *entry.Entry) (int, error) {
 		b, err := l.e(entry)
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("enode err: %w", err)
 		}
 
-		return l.w.Write(b)
+		n, err := l.w.Write(b)
+		if err != nil {
+			return 0, fmt.Errorf("failed write: %w", err)
+		}
+
+		return n, nil
 	}
 }
 
@@ -50,9 +56,7 @@ func WithWriter(writer io.Writer) Option {
 
 // WithStdout sets logged to os.Stdout.
 func WithStdout() Option {
-	return func(l *log) {
-		l.w = os.Stdout
-	}
+	return WithWriter(os.Stdout)
 }
 
 // WithEncode sets format log.
@@ -64,18 +68,15 @@ func WithEncode(e Encode) Option {
 
 // WithStringFormat sets format as simple string.
 func WithStringFormat() Option {
-	return func(l *log) {
-		l.e = stringFormat()
-	}
+	return WithEncode(stringFormat())
 }
 
 // WithJSONFormat sets json output format.
 func WithJSONFormat() Option {
-	return func(l *log) {
-		l.e = jsonFormat
-	}
+	return WithEncode(jsonFormat)
 }
 
+//nolint: forcetypeassert
 func stringFormat() func(entry *entry.Entry) ([]byte, error) {
 	pool := sync.Pool{
 		New: func() interface{} {
@@ -111,7 +112,7 @@ func stringFormat() func(entry *entry.Entry) ([]byte, error) {
 func jsonFormat(entry *entry.Entry) ([]byte, error) {
 	res, err := json.Marshal(entry.AddString("msg", entry.Message()).Fields().AsMap())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("marshal err: %w", err)
 	}
 
 	return append(res, []byte("\n")...), nil

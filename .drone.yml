@@ -3,7 +3,7 @@ name: default
 
 steps:
 - name: test 
-  image: golang:1.14.2
+  image: golang:1.17.1
   volumes:
   - name: deps
     path: /go/src/mod
@@ -11,39 +11,9 @@ steps:
   - go test 
 
 - name: golangci-lint
-  image: golangci/golangci-lint:v1.29
+  image: golangci/golangci-lint:v1.42
   commands:
   - golangci-lint run
-
-- name: logrus golangci-lint
-  image: golangci/golangci-lint:v1.29
-  commands:
-  - cd logrus
-  - golangci-lint run
-
-- name: logrus test
-  image: golang:1.14.2
-  volumes:
-    - name: deps
-      path: /go/src/mod
-  commands:
-  - cd logrus
-  - go test 
-
-- name: zap golangci-lint
-  image: golangci/golangci-lint:v1.29
-  commands:
-  - cd zap
-  - golangci-lint run
-
-- name: zap test
-  image: golang:1.14.2
-  volumes:
-    - name: deps
-      path: /go/src/mod
-  commands:
-  - cd zap
-  - go test
 
 volumes:
 - name: deps

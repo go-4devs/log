@@ -255,7 +255,7 @@ type Field struct {
 	value Value
 }
 
-//nolint: gocyclo
+//nolint: gocyclo,cyclop
 func (f Field) AddTo(enc Encoder) {
 	key := string(f.key)
 

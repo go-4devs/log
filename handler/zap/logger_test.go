@@ -14,6 +14,8 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 	buf := &bytes.Buffer{}
 	core := zapcore.NewCore(zapcore.NewJSONEncoder(zapcore.EncoderConfig{
@@ -24,7 +26,7 @@ func TestNew(t *testing.T) {
 		EncodeTime:     zapcore.ISO8601TimeEncoder,
 		EncodeDuration: zapcore.StringDurationEncoder,
 	}), zapcore.AddSync(buf), zapcore.DebugLevel)
-	logger := zlog.New(zlog.WithZap(zap.New(core)))
+	logger := zlog.New(zap.New(core))
 	expect := `{"level":"info","msg":"handle zap message","env":"test"}` + "\n"
 
 	if _, err := logger(ctx, entry.New(

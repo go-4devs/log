@@ -9,6 +9,7 @@ var pool = sync.Pool{
 	},
 }
 
+//nolint: forcetypeassert
 func Get() *Entry {
 	e := pool.Get().(*Entry)
 	e.Reset()

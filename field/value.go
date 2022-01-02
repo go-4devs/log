@@ -16,10 +16,15 @@ type Value struct {
 }
 
 func (v Value) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.AsInterface())
+	b, err := json.Marshal(v.AsInterface())
+	if err != nil {
+		return nil, fmt.Errorf("marshal err: %w", err)
+	}
+
+	return b, nil
 }
 
-//nolint: gocyclo
+//nolint: gocyclo,gomnd,cyclop
 func (v Value) String() string {
 	switch {
 	case v.vtype.IsArray(), v.vtype.IsAny():
@@ -57,7 +62,7 @@ func (v Value) String() string {
 	return fmt.Sprintf("%+v", v.AsInterface())
 }
 
-//nolint: gocyclo
+//nolint: gocyclo,cyclop
 func (v Value) AsInterface() interface{} {
 	switch {
 	case v.vtype.IsArray():
@@ -288,20 +293,29 @@ func (v Value) asError() error {
 }
 
 func nilValue(t Type) Value {
-	return Value{vtype: t | TypeNil}
+	return Value{
+		vtype:    t | TypeNil,
+		value:    nil,
+		numeric:  0,
+		stringly: "",
+	}
 }
 
 func stringValue(v string) Value {
 	return Value{
 		stringly: v,
 		vtype:    TypeString,
+		numeric:  0,
+		value:    nil,
 	}
 }
 
 func stringsValue(v []string) Value {
 	return Value{
-		value: v,
-		vtype: TypeString | TypeArray,
+		value:    v,
+		vtype:    TypeString | TypeArray,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
@@ -316,20 +330,27 @@ func stringpValue(v *string) Value {
 func boolValue(b bool) Value {
 	if b {
 		return Value{
-			numeric: 1,
-			vtype:   TypeBool,
+			numeric:  1,
+			vtype:    TypeBool,
+			value:    nil,
+			stringly: "",
 		}
 	}
 
 	return Value{
-		vtype: TypeBool,
+		vtype:    TypeBool,
+		value:    nil,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
 func boolsValue(b []bool) Value {
 	return Value{
-		value: b,
-		vtype: TypeBool | TypeArray,
+		value:    b,
+		vtype:    TypeBool | TypeArray,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
@@ -343,15 +364,19 @@ func boolpValue(b *bool) Value {
 
 func intValue(i int) Value {
 	return Value{
-		vtype:   TypeInt,
-		numeric: uint64(i),
+		vtype:    TypeInt,
+		numeric:  uint64(i),
+		value:    nil,
+		stringly: "",
 	}
 }
 
 func intsValue(i []int) Value {
 	return Value{
-		value: i,
-		vtype: TypeInt | TypeArray,
+		value:    i,
+		vtype:    TypeInt | TypeArray,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
@@ -365,15 +390,19 @@ func intpValue(in *int) Value {
 
 func int8Value(i int8) Value {
 	return Value{
-		vtype:   TypeInt8,
-		numeric: uint64(i),
+		vtype:    TypeInt8,
+		numeric:  uint64(i),
+		value:    nil,
+		stringly: "",
 	}
 }
 
 func int8sValue(i []int8) Value {
 	return Value{
-		value: i,
-		vtype: TypeInt8 | TypeArray,
+		value:    i,
+		vtype:    TypeInt8 | TypeArray,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
@@ -387,15 +416,19 @@ func int8pValue(in *int8) Value {
 
 func int16Value(i int16) Value {
 	return Value{
-		vtype:   TypeInt16,
-		numeric: uint64(i),
+		vtype:    TypeInt16,
+		numeric:  uint64(i),
+		value:    0,
+		stringly: "",
 	}
 }
 
 func int16sValue(i []int16) Value {
 	return Value{
-		value: i,
-		vtype: TypeInt16 | TypeArray,
+		value:    i,
+		vtype:    TypeInt16 | TypeArray,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
@@ -409,15 +442,19 @@ func int16pValue(in *int16) Value {
 
 func int32Value(i int32) Value {
 	return Value{
-		vtype:   TypeInt32,
-		numeric: uint64(i),
+		vtype:    TypeInt32,
+		numeric:  uint64(i),
+		value:    nil,
+		stringly: "",
 	}
 }
 
 func int32sValue(i []int32) Value {
 	return Value{
-		value: i,
-		vtype: TypeInt32 | TypeArray,
+		value:    i,
+		vtype:    TypeInt32 | TypeArray,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
@@ -431,15 +468,19 @@ func int32pValue(in *int32) Value {
 
 func int64Value(i int64) Value {
 	return Value{
-		vtype:   TypeInt64,
-		numeric: uint64(i),
+		vtype:    TypeInt64,
+		numeric:  uint64(i),
+		value:    nil,
+		stringly: "",
 	}
 }
 
 func int64sValue(i []int64) Value {
 	return Value{
-		value: i,
-		vtype: TypeInt64 | TypeArray,
+		value:    i,
+		vtype:    TypeInt64 | TypeArray,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
@@ -453,15 +494,19 @@ func int64pValue(in *int64) Value {
 
 func uintValue(i uint) Value {
 	return Value{
-		vtype:   TypeUint,
-		numeric: uint64(i),
+		vtype:    TypeUint,
+		numeric:  uint64(i),
+		value:    nil,
+		stringly: "",
 	}
 }
 
 func uintsValue(i []uint) Value {
 	return Value{
-		value: i,
-		vtype: TypeUint | TypeArray,
+		value:    i,
+		vtype:    TypeUint | TypeArray,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
@@ -475,15 +520,19 @@ func uintpValue(in *uint) Value {
 
 func uint8Value(i uint8) Value {
 	return Value{
-		vtype:   TypeUint8,
-		numeric: uint64(i),
+		vtype:    TypeUint8,
+		numeric:  uint64(i),
+		value:    nil,
+		stringly: "",
 	}
 }
 
 func uint8sValue(i []uint8) Value {
 	return Value{
-		value: i,
-		vtype: TypeUint8 | TypeArray,
+		value:    i,
+		vtype:    TypeUint8 | TypeArray,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
@@ -497,15 +546,19 @@ func uint8pValue(in *uint8) Value {
 
 func uint16Value(i uint16) Value {
 	return Value{
-		vtype:   TypeUint16,
-		numeric: uint64(i),
+		vtype:    TypeUint16,
+		numeric:  uint64(i),
+		value:    nil,
+		stringly: "",
 	}
 }
 
 func uint16sValue(i []uint16) Value {
 	return Value{
-		value: i,
-		vtype: TypeUint16 | TypeArray,
+		value:    i,
+		vtype:    TypeUint16 | TypeArray,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
@@ -519,15 +572,19 @@ func uint16pValue(in *uint16) Value {
 
 func uint32Value(i uint32) Value {
 	return Value{
-		vtype:   TypeUint32,
-		numeric: uint64(i),
+		vtype:    TypeUint32,
+		numeric:  uint64(i),
+		value:    nil,
+		stringly: "",
 	}
 }
 
 func uint32sValue(i []uint32) Value {
 	return Value{
-		value: i,
-		vtype: TypeUint32 | TypeArray,
+		value:    i,
+		vtype:    TypeUint32 | TypeArray,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
@@ -541,15 +598,19 @@ func uint32pValue(in *uint32) Value {
 
 func uint64Value(i uint64) Value {
 	return Value{
-		vtype:   TypeUint64,
-		numeric: i,
+		vtype:    TypeUint64,
+		numeric:  i,
+		value:    nil,
+		stringly: "",
 	}
 }
 
 func uint64sValue(i []uint64) Value {
 	return Value{
-		value: i,
-		vtype: TypeUint64 | TypeArray,
+		value:    i,
+		vtype:    TypeUint64 | TypeArray,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
@@ -563,15 +624,19 @@ func uint64pValue(in *uint64) Value {
 
 func float32Value(i float32) Value {
 	return Value{
-		vtype:   TypeFloat32,
-		numeric: uint64(math.Float32bits(i)),
+		vtype:    TypeFloat32,
+		numeric:  uint64(math.Float32bits(i)),
+		value:    nil,
+		stringly: "",
 	}
 }
 
 func float32sValue(i []float32) Value {
 	return Value{
-		value: i,
-		vtype: TypeFloat32 | TypeArray,
+		value:    i,
+		vtype:    TypeFloat32 | TypeArray,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
@@ -585,15 +650,19 @@ func float32pValue(in *float32) Value {
 
 func float64Value(i float64) Value {
 	return Value{
-		vtype:   TypeFloat64,
-		numeric: math.Float64bits(i),
+		vtype:    TypeFloat64,
+		numeric:  math.Float64bits(i),
+		value:    nil,
+		stringly: "",
 	}
 }
 
 func float64sValue(i []float64) Value {
 	return Value{
-		value: i,
-		vtype: TypeFloat64 | TypeArray,
+		value:    i,
+		vtype:    TypeFloat64 | TypeArray,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
@@ -607,15 +676,19 @@ func float64pValue(in *float64) Value {
 
 func complex64Value(in complex64) Value {
 	return Value{
-		vtype: TypeComplex64,
-		value: in,
+		vtype:    TypeComplex64,
+		value:    in,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
 func complex64sValue(in []complex64) Value {
 	return Value{
-		vtype: TypeComplex64 | TypeArray,
-		value: in,
+		vtype:    TypeComplex64 | TypeArray,
+		value:    in,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
@@ -629,15 +702,19 @@ func complex64pValue(in *complex64) Value {
 
 func complex128Value(in complex128) Value {
 	return Value{
-		vtype: TypeComplex64,
-		value: in,
+		vtype:    TypeComplex64,
+		value:    in,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
 func complex128sValue(in []complex128) Value {
 	return Value{
-		vtype: TypeComplex128 | TypeArray,
-		value: in,
+		vtype:    TypeComplex128 | TypeArray,
+		value:    in,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
@@ -651,15 +728,19 @@ func complex128pValue(in *complex128) Value {
 
 func uintptrValue(in uintptr) Value {
 	return Value{
-		vtype: TypeUintptr,
-		value: in,
+		vtype:    TypeUintptr,
+		numeric:  0,
+		stringly: "",
+		value:    in,
 	}
 }
 
 func uintptrsValue(in []uintptr) Value {
 	return Value{
-		vtype: TypeUintptr | TypeArray,
-		value: in,
+		vtype:    TypeUintptr | TypeArray,
+		value:    in,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
@@ -673,22 +754,28 @@ func uintptrpValue(in *uintptr) Value {
 
 func bytesValue(in []byte) Value {
 	return Value{
-		vtype: TypeBinary,
-		value: in,
+		vtype:    TypeBinary,
+		value:    in,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
 func durationValue(in time.Duration) Value {
 	return Value{
-		vtype: TypeDuration,
-		value: in,
+		vtype:    TypeDuration,
+		value:    in,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
 func durationsValue(in []time.Duration) Value {
 	return Value{
-		vtype: TypeDuration | TypeArray,
-		value: in,
+		vtype:    TypeDuration | TypeArray,
+		value:    in,
+		numeric:  0,
+		stringly: "",
 	}
 }
 
@@ -717,6 +804,7 @@ func formatTimeValue(format string, in time.Time) Value {
 		vtype:    TypeTime,
 		value:    in,
 		stringly: format,
+		numeric:  0,
 	}
 }
 
@@ -725,6 +813,7 @@ func formatTimesValue(format string, in []time.Time) Value {
 		vtype:    TypeTime | TypeArray,
 		value:    in,
 		stringly: format,
+		numeric:  0,
 	}
 }
 
@@ -739,8 +828,10 @@ func formatTimepValue(format string, in *time.Time) Value {
 func errorValue(in error) Value {
 	if in != nil {
 		return Value{
-			vtype: TypeError,
-			value: in,
+			vtype:    TypeError,
+			value:    in,
+			numeric:  0,
+			stringly: "",
 		}
 	}
 
@@ -749,7 +840,9 @@ func errorValue(in error) Value {
 
 func errorsValue(in []error) Value {
 	return Value{
-		vtype: TypeError | TypeArray,
-		value: in,
+		vtype:    TypeError | TypeArray,
+		value:    in,
+		numeric:  0,
+		stringly: "",
 	}
 }

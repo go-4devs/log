@@ -9,87 +9,55 @@ import (
 	"go.uber.org/zap"
 )
 
-// Option configure logger.
-type Option func(*logger)
-
-// WithLevel sets level logged message.
-func WithLevel(level level.Level, f func(z *zap.Logger, msg string, fields ...zap.Field)) Option {
-	return func(l *logger) {
-		l.levels[level] = f
-	}
+func Nop() log.Logger {
+	return New(zap.NewNop())
 }
 
-// WithZap sets zap logger.
-func WithZap(z *zap.Logger) Option {
-	return func(l *logger) {
-		l.zap = z
-	}
+func Example(options ...zap.Option) log.Logger {
+	return New(zap.NewExample(options...))
 }
 
-// New create handler by zap logger.
-func New(opts ...Option) log.Logger {
-	z, err := zap.NewDevelopment()
+func Production(options ...zap.Option) log.Logger {
+	z, err := zap.NewProduction(options...)
 	if err != nil {
 		panic(err)
 	}
 
-	log := logger{
-		zap: z,
-		levels: map[level.Level]func(z *zap.Logger, msg string, fields ...zap.Field){
-			level.Emergency: fatalLog,
-			level.Alert:     panicLog,
-			level.Critical:  errorLog,
-			level.Error:     errorLog,
-			level.Warning:   warnLog,
-			level.Notice:    infoLog,
-			level.Info:      infoLog,
-			level.Debug:     debugLog,
-		},
+	return New(z)
+}
+
+func Development(options ...zap.Option) log.Logger {
+	z, err := zap.NewDevelopment(options...)
+	if err != nil {
+		panic(err)
 	}
 
-	for _, opt := range opts {
-		opt(&log)
+	return New(z)
+}
+
+// New create handler by zap logger.
+func New(z *zap.Logger) log.Logger {
+	return func(ctx context.Context, e *entry.Entry) (int, error) {
+		zf := make([]zap.Field, e.Fields().Len())
+		for i, field := range e.Fields() {
+			zf[i] = zap.Any(string(field.Key()), field.AsInterface())
+		}
+
+		switch e.Level() {
+		case level.Emergency:
+			z.Fatal(e.Message(), zf...)
+		case level.Alert:
+			z.Panic(e.Message(), zf...)
+		case level.Critical, level.Error:
+			z.Error(e.Message(), zf...)
+		case level.Warning:
+			z.Warn(e.Message(), zf...)
+		case level.Notice, level.Info:
+			z.Info(e.Message(), zf...)
+		case level.Debug:
+			z.Debug(e.Message(), zf...)
+		}
+
+		return 0, nil
 	}
-
-	return log.log
-}
-
-type logger struct {
-	zap    *zap.Logger
-	levels map[level.Level]func(z *zap.Logger, msg string, fields ...zap.Field)
-}
-
-func (l *logger) log(ctx context.Context, e *entry.Entry) (int, error) {
-	zf := make([]zap.Field, e.Fields().Len())
-	for i, field := range e.Fields() {
-		zf[i] = zap.Any(string(field.Key()), field.AsInterface())
-	}
-
-	l.levels[e.Level()](l.zap, e.Message(), zf...)
-
-	return 0, nil
-}
-
-func panicLog(z *zap.Logger, msg string, fields ...zap.Field) {
-	z.Panic(msg, fields...)
-}
-
-func fatalLog(z *zap.Logger, msg string, fields ...zap.Field) {
-	z.Fatal(msg, fields...)
-}
-
-func errorLog(z *zap.Logger, msg string, fields ...zap.Field) {
-	z.Error(msg, fields...)
-}
-
-func warnLog(z *zap.Logger, msg string, fields ...zap.Field) {
-	z.Warn(msg, fields...)
-}
-
-func infoLog(z *zap.Logger, msg string, fields ...zap.Field) {
-	z.Info(msg, fields...)
-}
-
-func debugLog(z *zap.Logger, msg string, fields ...zap.Field) {
-	z.Debug(msg, fields...)
 }

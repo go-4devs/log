@@ -323,6 +323,33 @@ type writer struct {
 	Logger
 }
 
+func (w writer) WithLevel(level level.Level) writer {
+	return writer{
+		level:  level,
+		Logger: w.Logger,
+		ctx:    w.ctx,
+		fields: w.fields,
+	}
+}
+
+func (w writer) WithContext(ctx context.Context) writer {
+	return writer{
+		level:  w.level,
+		Logger: w.Logger,
+		ctx:    ctx,
+		fields: w.fields,
+	}
+}
+
+func (w writer) WithFields(fields ...field.Field) writer {
+	return writer{
+		level:  w.level,
+		Logger: w.Logger,
+		ctx:    w.ctx,
+		fields: fields,
+	}
+}
+
 func (w writer) Write(in []byte) (int, error) {
 	return w.write(w.ctx, w.level, string(in), w.fields...)
 }

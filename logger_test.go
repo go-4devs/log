@@ -17,6 +17,8 @@ import (
 var requestID ctxKey = "requestID"
 
 func TestFields(t *testing.T) {
+	t.Parallel()
+
 	type rObj struct {
 		id string
 	}
@@ -58,6 +60,8 @@ func TestFields(t *testing.T) {
 }
 
 func TestWriter(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 
 	success := "msg=\"info message\" err=file already exists requestID=6a5fa048-7181-11ea-bc55-0242ac1311113 level=info\n"
@@ -84,6 +88,8 @@ func TestWriter(t *testing.T) {
 }
 
 func TestLogger(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 	buf := &bytes.Buffer{}
 	logger := log.New(log.WithWriter(buf)).With(log.WithContextValue(requestID), log.WithLevel("level", level.Info))

@@ -2,6 +2,7 @@ package level
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 )
 
@@ -28,7 +29,12 @@ const (
 )
 
 func (l Level) MarshalJSON() ([]byte, error) {
-	return json.Marshal(l.String())
+	b, err := json.Marshal(l.String())
+	if err != nil {
+		return nil, fmt.Errorf("marshal err: %w", err)
+	}
+
+	return b, nil
 }
 
 func (l Level) Is(level Level) bool {
@@ -42,7 +48,7 @@ func (l Level) Enabled(level Level) bool {
 func (l *Level) UnmarshalJSON(in []byte) error {
 	var v string
 	if err := json.Unmarshal(in, &v); err != nil {
-		return err
+		return fmt.Errorf("unmarshal err: %w", err)
 	}
 
 	lvl := Parse(v)

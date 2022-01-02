@@ -8,9 +8,8 @@ import (
 	"gitoa.ru/go-4devs/log"
 	"gitoa.ru/go-4devs/log/field"
 	"gitoa.ru/go-4devs/log/handler/otel"
-	apitrace "go.opentelemetry.io/otel/api/trace"
-	"go.opentelemetry.io/otel/sdk/export/trace"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func ExampleNew_withTrace() {
@@ -33,7 +32,7 @@ func ExampleNew_withTrace() {
 	// event: log logrus kv sugar, SeverityText = ERROR, SeverityNumber = 17, err = EOF
 }
 
-func startSpan(ctx context.Context) (context.Context, apitrace.Span) {
+func startSpan(ctx context.Context) (context.Context, trace.Span) {
 	tp := sdktrace.NewTracerProvider(sdktrace.WithSyncer(exporter{}))
 
 	return tp.Tracer("logger").Start(ctx, "operation")
@@ -45,7 +44,7 @@ func (e exporter) Shutdown(_ context.Context) error {
 	return nil
 }
 
-func (e exporter) ExportSpans(ctx context.Context, spanData []*trace.SpanData) error {
+func (e exporter) ExportSpans(ctx context.Context, spanData []*sdktrace.SpanSnapshot) error {
 	for _, data := range spanData {
 		for _, events := range data.MessageEvents {
 			fmt.Print("event: ", events.Name)

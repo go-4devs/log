@@ -6,7 +6,7 @@ import (
 
 type Key string
 
-//nolint: gocyclo, funlen
+//nolint: gocyclo,funlen,cyclop
 func (k Key) Any(value interface{}) Field {
 	switch v := value.(type) {
 	case string:
@@ -120,8 +120,10 @@ func (k Key) Any(value interface{}) Field {
 	return Field{
 		key: k,
 		value: Value{
-			value: value,
-			vtype: TypeAny,
+			value:    value,
+			vtype:    TypeAny,
+			numeric:  0,
+			stringly: "",
 		},
 	}
 }
