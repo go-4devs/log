@@ -19,11 +19,11 @@ func (f Fields) Len() int {
 }
 
 func (f Fields) AsMap() MapField {
-	m := make(MapField, len(f))
+	fields := make(MapField, len(f))
 
 	for _, field := range f {
-		m[field.Key()] = field.Value()
+		fields[field.Key()] = field.Value()
 	}
 
-	return m
+	return fields
 }

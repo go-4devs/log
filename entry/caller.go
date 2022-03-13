@@ -8,13 +8,13 @@ import (
 
 func Caller(depth int, full bool) string {
 	const offset = 4
-	_, file, line, ok := runtime.Caller(depth + offset)
+	_, file, line, has := runtime.Caller(depth + offset)
 
-	if !ok {
+	if !has {
 		file, line = "???", 0
 	}
 
-	if !full && ok {
+	if !full && has {
 		file = filepath.Base(file)
 	}
 

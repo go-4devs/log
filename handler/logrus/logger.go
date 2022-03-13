@@ -16,27 +16,27 @@ func Standard() log.Logger {
 
 // New create new logrus handler.
 func New(log *logrus.Logger) log.Logger {
-	return func(ctx context.Context, e *entry.Entry) (int, error) {
-		lrgFields := make(logrus.Fields, e.Fields().Len())
-		for _, field := range e.Fields() {
+	return func(ctx context.Context, data *entry.Entry) (int, error) {
+		lrgFields := make(logrus.Fields, data.Fields().Len())
+		for _, field := range data.Fields() {
 			lrgFields[string(field.Key())] = field.AsInterface()
 		}
 
 		entry := log.WithContext(ctx).WithFields(lrgFields)
 
-		switch e.Level() {
+		switch data.Level() {
 		case level.Emergency:
-			entry.Panic(e.Message())
+			entry.Panic(data.Message())
 		case level.Alert:
-			entry.Fatal(e.Message())
+			entry.Fatal(data.Message())
 		case level.Critical, level.Error:
-			entry.Error(e.Message())
+			entry.Error(data.Message())
 		case level.Warning:
-			entry.Warn(e.Message())
+			entry.Warn(data.Message())
 		case level.Notice, level.Info:
-			entry.Info(e.Message())
+			entry.Info(data.Message())
 		case level.Debug:
-			entry.Debug(e.Message())
+			entry.Debug(data.Message())
 		}
 
 		return 0, nil

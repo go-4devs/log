@@ -19,6 +19,12 @@ linters-settings:
       locale: US  
     exhaustive:
       default-signifies-exhaustive: true
+    varnamelen:
+      min-name-length: 2
+      ignore-names:
+        - err
+        - "n"
+        - i
     tagliatelle:
       case:
         use-field-name: true
@@ -39,3 +45,4 @@ issues:
       linters:
         - gomnd
         - exhaustivestruct
+        - ireturn

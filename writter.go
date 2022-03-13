@@ -15,19 +15,19 @@ import (
 
 // New creates standart logger.
 func New(opts ...Option) Logger {
-	l := log{e: stringFormat(), w: os.Stderr}
+	logger := log{e: stringFormat(), w: os.Stderr}
 
 	for _, opt := range opts {
-		opt(&l)
+		opt(&logger)
 	}
 
 	return func(_ context.Context, entry *entry.Entry) (int, error) {
-		b, err := l.e(entry)
+		b, err := logger.e(entry)
 		if err != nil {
 			return 0, fmt.Errorf("enode err: %w", err)
 		}
 
-		n, err := l.w.Write(b)
+		n, err := logger.w.Write(b)
 		if err != nil {
 			return 0, fmt.Errorf("failed write: %w", err)
 		}
@@ -85,27 +85,27 @@ func stringFormat() func(entry *entry.Entry) ([]byte, error) {
 	}
 
 	return func(entry *entry.Entry) ([]byte, error) {
-		b := pool.Get().(*bytes.Buffer)
-		b.Reset()
+		buf := pool.Get().(*bytes.Buffer)
+		buf.Reset()
 
 		defer func() {
-			pool.Put(b)
+			pool.Put(buf)
 		}()
 
-		b.WriteString("msg=\"")
-		b.WriteString(strings.TrimSpace(entry.Message()))
-		b.WriteString("\"")
+		buf.WriteString("msg=\"")
+		buf.WriteString(strings.TrimSpace(entry.Message()))
+		buf.WriteString("\"")
 
 		for _, field := range entry.Fields() {
-			b.WriteString(" ")
-			b.WriteString(string(field.Key()))
-			b.WriteString("=")
-			b.WriteString(field.Value().String())
+			buf.WriteString(" ")
+			buf.WriteString(string(field.Key()))
+			buf.WriteString("=")
+			buf.WriteString(field.Value().String())
 		}
 
-		b.WriteString("\n")
+		buf.WriteString("\n")
 
-		return b.Bytes(), nil
+		return buf.Bytes(), nil
 	}
 }
 

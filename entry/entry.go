@@ -38,17 +38,17 @@ func WithLevel(lvl level.Level) Option {
 }
 
 func New(opts ...Option) *Entry {
-	e := &Entry{
+	entry := &Entry{
 		fields: make(field.Fields, 0, defaultCap+1),
 		level:  level.Debug,
 		msg:    "",
 	}
 
 	for _, opt := range opts {
-		opt(e)
+		opt(entry)
 	}
 
-	return e
+	return entry
 }
 
 // Entry slice field.
