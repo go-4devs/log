@@ -8,113 +8,113 @@ type Key string
 
 //nolint: gocyclo,funlen,cyclop
 func (k Key) Any(value interface{}) Field {
-	switch v := value.(type) {
+	switch val := value.(type) {
 	case string:
-		return k.String(v)
+		return k.String(val)
 	case *string:
-		return k.Stringp(v)
+		return k.Stringp(val)
 	case []string:
-		return k.Strings(v...)
+		return k.Strings(val...)
 	case bool:
-		return k.Bool(v)
+		return k.Bool(val)
 	case *bool:
-		return k.Boolp(v)
+		return k.Boolp(val)
 	case []bool:
-		return k.Bools(v...)
+		return k.Bools(val...)
 	case int8:
-		return k.Int8(v)
+		return k.Int8(val)
 	case []int8:
-		return k.Int8s(v...)
+		return k.Int8s(val...)
 	case *int8:
-		return k.Int8p(v)
+		return k.Int8p(val)
 	case int16:
-		return k.Int16(v)
+		return k.Int16(val)
 	case []int16:
-		return k.Int16s(v...)
+		return k.Int16s(val...)
 	case *int16:
-		return k.Int16p(v)
+		return k.Int16p(val)
 	case int32:
-		return k.Int32(v)
+		return k.Int32(val)
 	case []int32:
-		return k.Int32s(v...)
+		return k.Int32s(val...)
 	case *int32:
-		return k.Int32p(v)
+		return k.Int32p(val)
 	case int64:
-		return k.Int64(v)
+		return k.Int64(val)
 	case []int64:
-		return k.Int64s(v...)
+		return k.Int64s(val...)
 	case *int64:
-		return k.Int64p(v)
+		return k.Int64p(val)
 	case uint:
-		return k.Uint(v)
+		return k.Uint(val)
 	case []uint:
-		return k.Uints(v...)
+		return k.Uints(val...)
 	case *uint:
-		return k.Uintp(v)
+		return k.Uintp(val)
 	case uint8:
-		return k.Uint8(v)
+		return k.Uint8(val)
 	case *uint8:
-		return k.Uint8p(v)
+		return k.Uint8p(val)
 	case uint16:
-		return k.Uint16(v)
+		return k.Uint16(val)
 	case []uint16:
-		return k.Uint16s(v...)
+		return k.Uint16s(val...)
 	case *uint16:
-		return k.Uint16p(v)
+		return k.Uint16p(val)
 	case uint32:
-		return k.Uint32(v)
+		return k.Uint32(val)
 	case []uint32:
-		return k.Uint32s(v...)
+		return k.Uint32s(val...)
 	case *uint32:
-		return k.Uint32p(v)
+		return k.Uint32p(val)
 	case uint64:
-		return k.Uint64(v)
+		return k.Uint64(val)
 	case []uint64:
-		return k.Uint64s(v...)
+		return k.Uint64s(val...)
 	case *uint64:
-		return k.Uint64p(v)
+		return k.Uint64p(val)
 	case float32:
-		return k.Float32(v)
+		return k.Float32(val)
 	case []float32:
-		return k.Float32s(v...)
+		return k.Float32s(val...)
 	case *float32:
-		return k.Float32p(v)
+		return k.Float32p(val)
 	case float64:
-		return k.Float64(v)
+		return k.Float64(val)
 	case []float64:
-		return k.Float64s(v...)
+		return k.Float64s(val...)
 	case *float64:
-		return k.Float64p(v)
+		return k.Float64p(val)
 	case complex64:
-		return k.Complex64(v)
+		return k.Complex64(val)
 	case []complex64:
-		return k.Complex64s(v...)
+		return k.Complex64s(val...)
 	case *complex64:
-		return k.Complex64p(v)
+		return k.Complex64p(val)
 	case uintptr:
-		return k.Uintptr(v)
+		return k.Uintptr(val)
 	case []uintptr:
-		return k.Uintptrs(v...)
+		return k.Uintptrs(val...)
 	case *uintptr:
-		return k.Uintptrp(v)
+		return k.Uintptrp(val)
 	case []byte:
-		return k.Bytes(v)
+		return k.Bytes(val)
 	case time.Duration:
-		return k.Dureation(v)
+		return k.Dureation(val)
 	case []time.Duration:
-		return k.Dureations(v)
+		return k.Dureations(val)
 	case *time.Duration:
-		return k.Dureationp(v)
+		return k.Dureationp(val)
 	case time.Time:
-		return k.Time(v)
+		return k.Time(val)
 	case []time.Time:
-		return k.Times(v...)
+		return k.Times(val...)
 	case *time.Time:
-		return k.Timep(v)
+		return k.Timep(val)
 	case error:
-		return k.Error(v)
+		return k.Error(val)
 	case []error:
-		return k.Errors(v...)
+		return k.Errors(val...)
 	}
 
 	return Field{

@@ -38,19 +38,19 @@ func levels(lvl level.Level) Level {
 	return 0
 }
 
-func addEvent(ctx context.Context, e *entry.Entry) {
+func addEvent(ctx context.Context, data *entry.Entry) {
 	span := trace.SpanFromContext(ctx)
-	attrs := make([]attribute.KeyValue, 0, e.Fields().Len()+levelFields)
+	attrs := make([]attribute.KeyValue, 0, data.Fields().Len()+levelFields)
 
-	lvl := levels(e.Level())
+	lvl := levels(data.Level())
 	attrs = append(attrs,
 		attribute.String(fieldSeverityText, lvl.String()),
 		attribute.Int(fieldSeverityNumber, int(lvl)),
 	)
 
-	for _, field := range e.Fields() {
+	for _, field := range data.Fields() {
 		attrs = append(attrs, attribute.String(string(field.Key()), field.Value().String()))
 	}
 
-	span.AddEvent(e.Message(), trace.WithAttributes(attrs...))
+	span.AddEvent(data.Message(), trace.WithAttributes(attrs...))
 }

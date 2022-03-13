@@ -36,26 +36,26 @@ func Development(options ...zap.Option) log.Logger {
 }
 
 // New create handler by zap logger.
-func New(z *zap.Logger) log.Logger {
-	return func(ctx context.Context, e *entry.Entry) (int, error) {
-		zf := make([]zap.Field, e.Fields().Len())
-		for i, field := range e.Fields() {
+func New(logger *zap.Logger) log.Logger {
+	return func(ctx context.Context, data *entry.Entry) (int, error) {
+		zf := make([]zap.Field, data.Fields().Len())
+		for i, field := range data.Fields() {
 			zf[i] = zap.Any(string(field.Key()), field.AsInterface())
 		}
 
-		switch e.Level() {
+		switch data.Level() {
 		case level.Emergency:
-			z.Fatal(e.Message(), zf...)
+			logger.Fatal(data.Message(), zf...)
 		case level.Alert:
-			z.Panic(e.Message(), zf...)
+			logger.Panic(data.Message(), zf...)
 		case level.Critical, level.Error:
-			z.Error(e.Message(), zf...)
+			logger.Error(data.Message(), zf...)
 		case level.Warning:
-			z.Warn(e.Message(), zf...)
+			logger.Warn(data.Message(), zf...)
 		case level.Notice, level.Info:
-			z.Info(e.Message(), zf...)
+			logger.Info(data.Message(), zf...)
 		case level.Debug:
-			z.Debug(e.Message(), zf...)
+			logger.Debug(data.Message(), zf...)
 		}
 
 		return 0, nil

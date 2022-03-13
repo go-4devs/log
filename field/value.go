@@ -265,31 +265,45 @@ func (v Value) asFloat64() float64 {
 }
 
 func (v Value) asComplex64() complex64 {
-	return v.value.(complex64)
+	cmplex, _ := v.value.(complex64)
+
+	return cmplex
 }
 
 func (v Value) asComplex128() complex128 {
-	return v.value.(complex128)
+	cmplex, _ := v.value.(complex128)
+
+	return cmplex
 }
 
 func (v Value) asUintptr() uintptr {
-	return v.value.(uintptr)
+	val, _ := v.value.(uintptr)
+
+	return val
 }
 
 func (v Value) asBinary() []byte {
-	return v.value.([]byte)
+	bytes, _ := v.value.([]byte)
+
+	return bytes
 }
 
 func (v Value) asDuration() time.Duration {
-	return v.value.(time.Duration)
+	duration, _ := v.value.(time.Duration)
+
+	return duration
 }
 
 func (v Value) asTime() time.Time {
-	return v.value.(time.Time)
+	value, _ := v.value.(time.Time)
+
+	return value
 }
 
 func (v Value) asError() error {
-	return v.value.(error)
+	err, _ := v.value.(error)
+
+	return err
 }
 
 func nilValue(t Type) Value {

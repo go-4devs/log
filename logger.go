@@ -37,13 +37,13 @@ func (l Logger) Write(in []byte) (int, error) {
 }
 
 func (l Logger) write(ctx context.Context, level level.Level, msg string, fields ...field.Field) (int, error) {
-	e := entry.Get()
+	writeEntry := entry.Get()
 
 	defer func() {
-		entry.Put(e)
+		entry.Put(writeEntry)
 	}()
 
-	return l(ctx, e.SetLevel(level).SetMessage(msg).Add(fields...))
+	return l(ctx, writeEntry.SetLevel(level).SetMessage(msg).Add(fields...))
 }
 
 func (l Logger) logKVs(ctx context.Context, level level.Level, msg string, args ...interface{}) {
@@ -63,21 +63,21 @@ func (l Logger) logln(ctx context.Context, level level.Level, args ...interface{
 }
 
 func (l Logger) kv(ctx context.Context, args ...interface{}) field.Fields {
-	e := entry.Get()
+	kvEntry := entry.Get()
 
 	defer func() {
-		entry.Put(e)
+		entry.Put(kvEntry)
 	}()
 
 	for i := 0; i < len(args); i++ {
 		if f, ok := args[i].(field.Field); ok {
-			e = e.Add(f)
+			kvEntry = kvEntry.Add(f)
 
 			continue
 		}
 
 		if i == len(args)-1 {
-			l.logKV(ctx, level.Critical, fmt.Sprint("Ignored key without a value.", args[i]), e.Fields()...)
+			l.logKV(ctx, level.Critical, fmt.Sprint("Ignored key without a value.", args[i]), kvEntry.Fields()...)
 
 			break
 		}
@@ -86,15 +86,15 @@ func (l Logger) kv(ctx context.Context, args ...interface{}) field.Fields {
 
 		key, val := args[i-1], args[i]
 		if keyStr, ok := key.(string); ok {
-			e = e.AddAny(keyStr, val)
+			kvEntry = kvEntry.AddAny(keyStr, val)
 
 			continue
 		}
 
-		l.logKV(ctx, level.Critical, fmt.Sprint("Ignored key-value pairs with non-string keys.", key, val), e.Fields()...)
+		l.logKV(ctx, level.Critical, fmt.Sprint("Ignored key-value pairs with non-string keys.", key, val), kvEntry.Fields()...)
 	}
 
-	return e.Fields()
+	return kvEntry.Fields()
 }
 
 // With adds middlewares to logger.
@@ -316,6 +316,7 @@ func (l Logger) Writer(ctx context.Context, level level.Level, fields ...field.F
 	}
 }
 
+//nolint: containedctx
 type writer struct {
 	ctx    context.Context
 	level  level.Level

@@ -30,7 +30,7 @@ func With(logger Logger, mw ...Middleware) Logger {
 
 	lastI := len(mw) - 1
 
-	return func(ctx context.Context, e *entry.Entry) (int, error) {
+	return func(ctx context.Context, data *entry.Entry) (int, error) {
 		var (
 			chainHandler func(context.Context, *entry.Entry) (int, error)
 			curI         int
@@ -47,7 +47,7 @@ func With(logger Logger, mw ...Middleware) Logger {
 			return n, err
 		}
 
-		return mw[0](ctx, e, chainHandler)
+		return mw[0](ctx, data, chainHandler)
 	}
 }
 
@@ -62,16 +62,16 @@ func WithLevel(key string, lvl level.Level) Middleware {
 	}
 }
 
-func WithClosure(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
-	for i, field := range e.Fields() {
+func WithClosure(ctx context.Context, data *entry.Entry, handler Logger) (int, error) {
+	for i, field := range data.Fields() {
 		if field.Type().IsAny() {
 			if f, ok := field.AsInterface().(func() string); ok {
-				e.Fields().Set(i, field.Key().String(f()))
+				data.Fields().Set(i, field.Key().String(f()))
 			}
 		}
 	}
 
-	return handler(ctx, e)
+	return handler(ctx, data)
 }
 
 // KeyValue add field by const key value.
