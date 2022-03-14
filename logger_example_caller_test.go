@@ -13,7 +13,7 @@ func ExampleNew_withCaller() {
 	)
 	logger.Err(ctx, "same error message")
 	logger.InfoKVs(ctx, "same info message", "api-version", 0.1)
-	logger.Write([]byte("same write message"))
+	_, _ = logger.Write([]byte("same write message"))
 
 	// Output:
 	// msg="same error message" level=error caller=logger_example_caller_test.go:14
