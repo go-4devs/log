@@ -7,7 +7,7 @@ import (
 )
 
 func Caller(depth int, full bool) string {
-	const offset = 4
+	const offset = 3
 	_, file, line, has := runtime.Caller(depth + offset)
 
 	if !has {
