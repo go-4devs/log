@@ -1,6 +1,7 @@
 package entry
 
 import (
+	"fmt"
 	"strings"
 
 	"gitoa.ru/go-4devs/log/field"
@@ -27,7 +28,14 @@ func WithFields(fields ...field.Field) Option {
 
 func WithMessage(msg string) Option {
 	return func(e *Entry) {
-		e.msg = msg
+		e.format = msg
+	}
+}
+
+func WithMessagef(format string, args ...interface{}) Option {
+	return func(e *Entry) {
+		e.format = format
+		e.args = args
 	}
 }
 
@@ -41,7 +49,8 @@ func New(opts ...Option) *Entry {
 	entry := &Entry{
 		fields: make(field.Fields, 0, defaultCap+1),
 		level:  level.Debug,
-		msg:    "",
+		format: "",
+		args:   make([]interface{}, 0, defaultCap+1),
 	}
 
 	for _, opt := range opts {
@@ -53,13 +62,16 @@ func New(opts ...Option) *Entry {
 
 // Entry slice field.
 type Entry struct {
-	msg    string
+	format string
+	args   []interface{}
 	level  level.Level
 	fields field.Fields
 }
 
 func (e *Entry) Reset() {
 	e.fields = e.fields[:0]
+	e.args = e.args[:0]
+	e.format = ""
 }
 
 func (e *Entry) Fields() field.Fields {
@@ -73,7 +85,7 @@ func (e *Entry) String() string {
 	}
 
 	str := make([]string, len(e.fields)+1)
-	str[0] = e.msg
+	str[0] = e.Message()
 
 	for i, field := range e.fields {
 		str[i+1] = field.String()
@@ -83,7 +95,14 @@ func (e *Entry) String() string {
 }
 
 func (e *Entry) Message() string {
-	return e.msg
+	switch {
+	case len(e.args) > 0 && e.format != "":
+		return fmt.Sprintf(e.format, e.args...)
+	case len(e.args) > 0:
+		return fmt.Sprint(e.args...)
+	default:
+		return e.format
+	}
 }
 
 func (e *Entry) Level() level.Level {
@@ -109,7 +128,18 @@ func (e *Entry) SetMessage(msg string) *Entry {
 		return New().SetMessage(msg)
 	}
 
-	e.msg = msg
+	e.format = msg
+
+	return e
+}
+
+func (e *Entry) SetMessagef(format string, args ...interface{}) *Entry {
+	if e == nil {
+		return New().SetMessagef(format, args...)
+	}
+
+	e.format = format
+	e.args = append(e.args[:0], args...)
 
 	return e
 }
