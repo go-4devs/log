@@ -37,6 +37,17 @@ linters-settings:
 
 linters:
     enable-all: true
+    disable:
+      - exhaustivestruct
+      - maligned
+      - deadcode
+      - interfacer
+      - golint
+      - varcheck
+      - nosnakecase
+      - scopelint
+      - ifshort
+      - structcheck
 
 issues:
   # Excluding configuration per-path, per-linter, per-text and per-source
@@ -44,5 +55,5 @@ issues:
     - path: _test\.go
       linters:
         - gomnd
-        - exhaustivestruct
         - ireturn
+        - exhaustruct

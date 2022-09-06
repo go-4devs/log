@@ -76,7 +76,7 @@ func WithJSONFormat() Option {
 	return WithEncode(jsonFormat)
 }
 
-//nolint: forcetypeassert
+//nolint:forcetypeassert
 func stringFormat() func(entry *entry.Entry) ([]byte, error) {
 	pool := sync.Pool{
 		New: func() interface{} {

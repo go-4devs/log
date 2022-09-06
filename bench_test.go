@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"testing"
 	"time"
 
@@ -12,7 +12,7 @@ import (
 	"gitoa.ru/go-4devs/log/field"
 )
 
-// nolint: gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	errExample  = errors.New("fail")
 	_messages   = fakeMessages(1000)
@@ -118,7 +118,7 @@ func fakeSugarFields() []interface{} {
 }
 
 func NewLogger() log.Logger {
-	return log.New(log.WithWriter(ioutil.Discard))
+	return log.New(log.WithWriter(io.Discard))
 }
 
 func BenchmarkDisabledWithoutFields(b *testing.B) {

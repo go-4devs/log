@@ -69,7 +69,7 @@ func ExampleNew_jsonFormat() {
 			log.GoVersion("go-version"),
 		)
 	logger.Err(ctx, "same error message")
-	// Output: {"go-version":"go1.17.8","level":"error","msg":"same error message"}
+	// Output: {"go-version":"go1.18.1","level":"error","msg":"same error message"}
 }
 
 func ExampleNew_textEncoding() {
@@ -82,8 +82,8 @@ func ExampleNew_textEncoding() {
 	logger.InfoKVs(ctx, "same info message", "api-version", 0.1)
 
 	// Output:
-	// msg="same error message" level=error go-version=go1.17.8
-	// msg="same info message" api-version=0.1 level=info go-version=go1.17.8
+	// msg="same error message" level=error go-version=go1.18.1
+	// msg="same info message" api-version=0.1 level=info go-version=go1.18.1
 }
 
 type ctxKey string
@@ -105,7 +105,7 @@ func ExampleWith() {
 		levelInfo, log.WithContextValue(requestID), log.KeyValue("api", "0.1.0"), log.GoVersion("go"),
 	)
 	logger.Info(vctx, "same message")
-	// Output: msg="same message" level=info requestID=6a5fa048-7181-11ea-bc55-0242ac130003 api=0.1.0 go=go1.17.8
+	// Output: msg="same message" level=info requestID=6a5fa048-7181-11ea-bc55-0242ac130003 api=0.1.0 go=go1.18.1
 }
 
 func ExampleLogger_Print() {
@@ -114,7 +114,7 @@ func ExampleLogger_Print() {
 		levelInfo, log.KeyValue("client", "http"), log.KeyValue("api", "0.1.0"), log.GoVersion("go"),
 	)
 	logger.Print("same message")
-	// Output: msg="same message" level=info client=http api=0.1.0 go=go1.17.8
+	// Output: msg="same message" level=info client=http api=0.1.0 go=go1.18.1
 }
 
 func ExamplePrint() {

@@ -44,9 +44,9 @@ func (e exporter) Shutdown(_ context.Context) error {
 	return nil
 }
 
-func (e exporter) ExportSpans(ctx context.Context, spanData []*sdktrace.SpanSnapshot) error {
+func (e exporter) ExportSpans(ctx context.Context, spanData []sdktrace.ReadOnlySpan) error {
 	for _, data := range spanData {
-		for _, events := range data.MessageEvents {
+		for _, events := range data.Events() {
 			fmt.Print("event: ", events.Name)
 
 			for _, attr := range events.Attributes {

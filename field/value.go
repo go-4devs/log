@@ -24,7 +24,7 @@ func (v Value) MarshalJSON() ([]byte, error) {
 	return b, nil
 }
 
-//nolint: gocyclo,gomnd,cyclop
+//nolint:gocyclo,gomnd,cyclop
 func (v Value) String() string {
 	switch {
 	case v.vtype.IsArray(), v.vtype.IsAny():
@@ -62,7 +62,7 @@ func (v Value) String() string {
 	return fmt.Sprintf("%+v", v.AsInterface())
 }
 
-//nolint: gocyclo,cyclop
+//nolint:gocyclo,cyclop
 func (v Value) AsInterface() interface{} {
 	switch {
 	case v.vtype.IsArray():

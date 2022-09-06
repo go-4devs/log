@@ -306,7 +306,7 @@ func (l Logger) Writer(ctx context.Context, level level.Level, fields ...field.F
 	}
 }
 
-//nolint: containedctx
+//nolint:containedctx
 type writer struct {
 	ctx    context.Context
 	level  level.Level

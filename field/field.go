@@ -255,13 +255,13 @@ type Field struct {
 	value Value
 }
 
-//nolint: gocyclo,cyclop
+//nolint:gocyclo,cyclop
 func (f Field) AddTo(enc Encoder) {
 	key := string(f.key)
 
 	switch {
 	case f.value.IsArray():
-		enc.AddAny(key, f.value)
+		enc.AddArray(key, f.value)
 	case f.value.IsNil():
 		enc.AddNil(key)
 	case f.value.IsBool():

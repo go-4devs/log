@@ -2,6 +2,7 @@ package field
 
 import "time"
 
+//nolint:interfacebloat
 type Encoder interface {
 	// Built-in types.
 	AddArray(key string, value Value)

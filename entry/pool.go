@@ -2,14 +2,14 @@ package entry
 
 import "sync"
 
-// nolint: gochecknoglobals
+//nolint:gochecknoglobals
 var pool = sync.Pool{
 	New: func() interface{} {
 		return New()
 	},
 }
 
-//nolint: forcetypeassert
+//nolint:forcetypeassert
 func Get() *Entry {
 	e := pool.Get().(*Entry)
 	e.Reset()
