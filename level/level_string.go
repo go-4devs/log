@@ -18,9 +18,9 @@ func _() {
 	_ = x[Debug-7]
 }
 
-const _Level_name = "emergencyalertcriticalerrorwarningnoticeinfodebug"
+const _Level_name = "emergalertcriterrorwarningnoticeinfodebug"
 
-var _Level_index = [...]uint8{0, 9, 14, 22, 27, 34, 40, 44, 49}
+var _Level_index = [...]uint8{0, 5, 10, 14, 19, 26, 32, 36, 41}
 
 func (i Level) String() string {
 	if i >= Level(len(_Level_index)-1) {

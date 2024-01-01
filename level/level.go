@@ -1,16 +1,20 @@
 package level
 
 import (
+	"encoding"
 	"encoding/json"
-	"fmt"
 	"strings"
 )
 
 //go:generate stringer -type=Level -linecomment
 
 var (
-	_ json.Marshaler   = Level(0)
-	_ json.Unmarshaler = (*Level)(nil)
+	_ json.Marshaler             = Level(0)
+	_ json.Unmarshaler           = (*Level)(nil)
+	_ encoding.TextMarshaler     = Level(0)
+	_ encoding.TextUnmarshaler   = (*Level)(nil)
+	_ encoding.BinaryMarshaler   = Level(0)
+	_ encoding.BinaryUnmarshaler = (*Level)(nil)
 )
 
 // Level log.
@@ -18,24 +22,15 @@ type Level uint32
 
 // available log levels.
 const (
-	Emergency Level = iota // emergency
+	Emergency Level = iota // emerg
 	Alert                  // alert
-	Critical               // critical
+	Critical               // crit
 	Error                  // error
 	Warning                // warning
 	Notice                 // notice
 	Info                   // info
 	Debug                  // debug
 )
-
-func (l Level) MarshalJSON() ([]byte, error) {
-	b, err := json.Marshal(l.String())
-	if err != nil {
-		return nil, fmt.Errorf("marshal err: %w", err)
-	}
-
-	return b, nil
-}
 
 func (l Level) Is(level Level) bool {
 	return level == l
@@ -45,13 +40,34 @@ func (l Level) Enabled(level Level) bool {
 	return l <= level
 }
 
-func (l *Level) UnmarshalJSON(in []byte) error {
-	var v string
-	if err := json.Unmarshal(in, &v); err != nil {
-		return fmt.Errorf("unmarshal err: %w", err)
-	}
+func (l Level) MarshalJSON() ([]byte, error) {
+	return []byte("\"" + l.String() + "\""), nil
+}
 
-	lvl := Parse(v)
+func (l *Level) UnmarshalJSON(in []byte) error {
+	lvl := Parse(string(in[1 : len(in)-1]))
+	*l = lvl
+
+	return nil
+}
+
+func (l Level) MarshalText() ([]byte, error) {
+	return []byte(l.String()), nil
+}
+
+func (l *Level) UnmarshalText(in []byte) error {
+	lvl := Parse(string(in))
+	*l = lvl
+
+	return nil
+}
+
+func (l Level) MarshalBinary() ([]byte, error) {
+	return []byte(l.String()), nil
+}
+
+func (l *Level) UnmarshalBinary(in []byte) error {
+	lvl := Parse(string(in))
 	*l = lvl
 
 	return nil
@@ -65,11 +81,11 @@ func Parse(lvl string) Level {
 		return Info
 	case "notice", "Notice", "NOTICE":
 		return Notice
-	case "warning", "Warning", "WARNING":
+	case "warning", "Warning", "WARNING", "warm", "Warm", "WARN":
 		return Warning
-	case "error", "Error", "ERROR":
+	case "error", "Error", "ERROR", "err", "Err", "ERR":
 		return Error
-	case "critical", "Critical", "CRITICAL":
+	case "critical", "Critical", "CRITICAL", "crit", "Crit", "CRIT":
 		return Critical
 	case "alert", "Alert", "ALERT":
 		return Alert
