@@ -23,8 +23,9 @@ linters-settings:
       min-name-length: 2
       ignore-names:
         - err
-        - "n"
+        - n
         - i
+        - w
     tagliatelle:
       case:
         use-field-name: true
@@ -38,16 +39,19 @@ linters-settings:
 linters:
     enable-all: true
     disable:
-      - exhaustivestruct
-      - maligned
-      - deadcode
+    # deprecated
       - interfacer
-      - golint
-      - varcheck
-      - nosnakecase
-      - scopelint
-      - ifshort
       - structcheck
+      - varcheck
+      - golint
+      - deadcode
+      - scopelint
+      - exhaustivestruct
+      - ifshort
+      - nosnakecase
+      - maligned
+
+      - depguard # need configure
 
 issues:
   # Excluding configuration per-path, per-linter, per-text and per-source
@@ -57,3 +61,8 @@ issues:
         - gomnd
         - ireturn
         - exhaustruct
+        - gochecknoglobals
+    - path: _example_test\.go
+      linters:
+        - lll
+        - goerr113

@@ -5,329 +5,499 @@ import (
 	"time"
 )
 
-func Any(key string, value interface{}) Field {
-	return Key(key).Any(value)
+func Any(key string, value any) Field {
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func String(key, value string) Field {
-	return Key(key).String(value)
+	return Field{
+		Key:   key,
+		Value: StringValue(value),
+	}
 }
 
 func Stringp(key string, value *string) Field {
-	return Key(key).Stringp(value)
+	return Field{
+		Key:   key,
+		Value: StringpValue(value),
+	}
 }
 
 func Strings(key string, value ...string) Field {
-	return Key(key).Strings(value...)
+	return Field{
+		Key:   key,
+		Value: StringsValue(value),
+	}
 }
 
 func Bool(key string, value bool) Field {
-	return Key(key).Bool(value)
+	return Field{
+		Key:   key,
+		Value: BoolValue(value),
+	}
 }
 
 func Bools(key string, value ...bool) Field {
-	return Key(key).Bools(value...)
+	return Field{
+		Key:   key,
+		Value: BoolsValue(value),
+	}
 }
 
 func Boolp(key string, value *bool) Field {
-	return Key(key).Boolp(value)
+	return Field{
+		Key:   key,
+		Value: BoolpValue(value),
+	}
 }
 
 func Uint(key string, value uint) Field {
-	return Key(key).Uint(value)
+	return Field{
+		Key:   key,
+		Value: Uint64Value(uint64(value)),
+	}
 }
 
 func Uints(key string, value ...uint) Field {
-	return Key(key).Uints(value...)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Uintp(key string, value *uint) Field {
-	return Key(key).Uintp(value)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Uint8(key string, value uint8) Field {
-	return Key(key).Uint8(value)
+	return Field{
+		Key:   key,
+		Value: Uint64Value(uint64(value)),
+	}
 }
 
 func Uint8s(key string, value ...uint8) Field {
-	return Key(key).Uint8s(value...)
+	return Field{
+		Key:   key,
+		Value: Uint8sValue(value),
+	}
 }
 
 func Uint8p(key string, value *uint8) Field {
-	return Key(key).Uint8p(value)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Uint16(key string, value uint16) Field {
-	return Key(key).Uint16(value)
+	return Field{
+		Key:   key,
+		Value: Uint64Value(uint64(value)),
+	}
 }
 
 func Uint16s(key string, value ...uint16) Field {
-	return Key(key).Uint16s(value...)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Uint16p(key string, value *uint16) Field {
-	return Key(key).Uint16p(value)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Uint32(key string, value uint32) Field {
-	return Key(key).Uint32(value)
+	return Field{
+		Key:   key,
+		Value: Uint64Value(uint64(value)),
+	}
 }
 
 func Uint32s(key string, value ...uint32) Field {
-	return Key(key).Uint32s(value...)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Uint32p(key string, value *uint32) Field {
-	return Key(key).Uint32p(value)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Uint64(key string, value uint64) Field {
-	return Key(key).Uint64(value)
+	return Field{
+		Key:   key,
+		Value: Uint64Value(value),
+	}
 }
 
 func Uint64s(key string, value ...uint64) Field {
-	return Key(key).Uint64s(value...)
+	return Field{
+		Key:   key,
+		Value: Uint64sValue(value),
+	}
 }
 
 func Uint64p(key string, value *uint64) Field {
-	return Key(key).Uint64p(value)
+	return Field{
+		Key:   key,
+		Value: Uint64pValue(value),
+	}
 }
 
 func Int(key string, value int) Field {
-	return Key(key).Int(value)
+	return Field{
+		Key:   key,
+		Value: Int64Value(int64(value)),
+	}
 }
 
 func Ints(key string, value ...int) Field {
-	return Key(key).Ints(value...)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Intp(key string, value *int) Field {
-	return Key(key).Intp(value)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Int8(key string, value int8) Field {
-	return Key(key).Int8(value)
+	return Field{
+		Key:   key,
+		Value: Int64Value(int64(value)),
+	}
 }
 
 func Int8s(key string, value ...int8) Field {
-	return Key(key).Int8s(value...)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Int8p(key string, value *int8) Field {
-	return Key(key).Int8p(value)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Int16(key string, value int16) Field {
-	return Key(key).Int16(value)
+	return Field{
+		Key:   key,
+		Value: Int64Value(int64(value)),
+	}
 }
 
 func Int16s(key string, value ...int16) Field {
-	return Key(key).Int16s(value...)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Int16p(key string, value *int16) Field {
-	return Key(key).Int16p(value)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Int32(key string, value int32) Field {
-	return Key(key).Int32(value)
+	return Field{
+		Key:   key,
+		Value: Int64Value(int64(value)),
+	}
 }
 
 func Int32s(key string, value ...int32) Field {
-	return Key(key).Int32s(value...)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Int32p(key string, value *int32) Field {
-	return Key(key).Int32p(value)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Int64(key string, value int64) Field {
-	return Key(key).Int64(value)
+	return Field{
+		Key:   key,
+		Value: Int64Value(value),
+	}
 }
 
 func Int64s(key string, value ...int64) Field {
-	return Key(key).Int64s(value...)
+	return Field{
+		Key:   key,
+		Value: Int64sValue(value),
+	}
 }
 
 func Int64p(key string, value *int64) Field {
-	return Key(key).Int64p(value)
+	return Field{
+		Key:   key,
+		Value: Int64pValue(value),
+	}
 }
 
 func Float32(key string, value float32) Field {
-	return Key(key).Float32(value)
+	return Field{
+		Key:   key,
+		Value: Float64Value(float64(value)),
+	}
 }
 
 func Float32s(key string, value ...float32) Field {
-	return Key(key).Float32s(value...)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Float32p(key string, value *float32) Field {
-	return Key(key).Float32p(value)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Float64(key string, value float64) Field {
-	return Key(key).Float64(value)
+	return Field{
+		Key:   key,
+		Value: Float64Value(value),
+	}
 }
 
 func Float64s(key string, value ...float64) Field {
-	return Key(key).Float64s(value...)
+	return Field{
+		Key:   key,
+		Value: Float64sValue(value),
+	}
 }
 
 func Float64p(key string, value *float64) Field {
-	return Key(key).Float64p(value)
+	return Field{
+		Key:   key,
+		Value: Float64pValue(value),
+	}
 }
 
 func Complex64(key string, value complex64) Field {
-	return Key(key).Complex64(value)
+	return Field{
+		Key:   key,
+		Value: Complex128Value(complex128(value)),
+	}
 }
 
 func Complex64s(key string, value ...complex64) Field {
-	return Key(key).Complex64s(value...)
+	return Field{
+		Key:   key,
+		Value: Complex64sValue(value),
+	}
 }
 
 func Complex64p(key string, value *complex64) Field {
-	return Key(key).Complex64p(value)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
+}
+
+func Complex128(key string, value complex128) Field {
+	return Field{
+		Key:   key,
+		Value: Complex128Value(value),
+	}
+}
+
+func Complex128s(key string, value ...complex128) Field {
+	return Field{
+		Key:   key,
+		Value: Complex128sValue(value),
+	}
+}
+
+func Complex128p(key string, value *complex128) Field {
+	return Field{
+		Key:   key,
+		Value: Complex128pValue(value),
+	}
 }
 
 func Uintptr(key string, value uintptr) Field {
-	return Key(key).Uintptr(value)
+	return Field{
+		Key:   key,
+		Value: Uint64Value(uint64(value)),
+	}
 }
 
 func Uintptrs(key string, value ...uintptr) Field {
-	return Key(key).Uintptrs(value...)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Uintptrp(key string, value *uintptr) Field {
-	return Key(key).Uintptrp(value)
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
 }
 
 func Bytes(key string, value []byte) Field {
-	return Key(key).Bytes(value)
+	return Field{
+		Key:   key,
+		Value: BytesValue(value),
+	}
 }
 
 func Duration(key string, value time.Duration) Field {
-	return Key(key).Dureation(value)
+	return Field{
+		Key:   key,
+		Value: DurationValue(value),
+	}
 }
 
 func Durations(key string, value ...time.Duration) Field {
-	return Key(key).Dureations(value)
+	return Field{
+		Key:   key,
+		Value: DurationsValue(value),
+	}
 }
 
 func Durationp(key string, value *time.Duration) Field {
-	return Key(key).Dureationp(value)
+	return Field{
+		Key:   key,
+		Value: DurationpValue(value),
+	}
 }
 
 func Time(key string, value time.Time) Field {
-	return Key(key).Time(value)
+	return Field{
+		Key:   key,
+		Value: TimeValue(value),
+	}
 }
 
 func Times(key string, value ...time.Time) Field {
-	return Key(key).Times(value...)
+	return Field{
+		Key:   key,
+		Value: TimesValue(value),
+	}
 }
 
 func Timep(key string, value *time.Time) Field {
-	return Key(key).Timep(value)
+	return Field{
+		Key:   key,
+		Value: TimepValue(value),
+	}
 }
 
 func FormatTime(key, format string, value time.Time) Field {
-	return Key(key).FormatTime(format, value)
+	return Field{
+		Key: key,
+		Value: ClosureValue(func() any {
+			return value.Format(format)
+		}),
+	}
 }
 
-func FormatTimes(key, foramt string, value ...time.Time) Field {
-	return Key(key).FormatTimes(foramt, value...)
+func FormatTimes(key, format string, value ...time.Time) Field {
+	return Field{
+		Key: key,
+		Value: ClosureValue(func() any {
+			times := make([]any, len(value))
+			for idx, val := range value {
+				times[idx] = val.Format(format)
+			}
+
+			return times
+		}),
+	}
 }
 
-func FormatTimep(key, foramt string, value *time.Time) Field {
-	return Key(key).FormatTimep(foramt, value)
+func FormatTimep(key, format string, value *time.Time) Field {
+	isNill := value == nil
+
+	return Field{
+		Key: key,
+		Value: ClosureValue(func() any {
+			if isNill {
+				return NilValue()
+			}
+
+			return value.Format(format)
+		}),
+	}
 }
 
 func Error(key string, value error) Field {
-	return Key(key).Error(value)
+	return Field{
+		Key:   key,
+		Value: ErrorValue(value),
+	}
 }
 
 func Errors(key string, value ...error) Field {
-	return Key(key).Errors(value...)
+	return Field{
+		Key:   key,
+		Value: ErrorsValue(value),
+	}
+}
+
+func Groups(key string, value ...Field) Field {
+	return Field{
+		Key:   key,
+		Value: GroupValue(value...),
+	}
+}
+
+func Valuer(key string, value LogValuer) Field {
+	return Field{
+		Key:   key,
+		Value: AnyValue(value),
+	}
+}
+
+func ValuerFn(key string, value ClosureFn) Field {
+	return Field{
+		Key:   key,
+		Value: ClosureValue(value),
+	}
 }
 
 // Field struct.
 type Field struct {
-	key   Key
-	value Value
-}
-
-//nolint:gocyclo,cyclop
-func (f Field) AddTo(enc Encoder) {
-	key := string(f.key)
-
-	switch {
-	case f.value.IsArray():
-		enc.AddArray(key, f.value)
-	case f.value.IsNil():
-		enc.AddNil(key)
-	case f.value.IsBool():
-		enc.AddBool(key, f.value.asBool())
-	case f.value.IsBinary():
-		enc.AddBinary(key, f.value.asBinary())
-	case f.value.IsInt():
-		enc.AddInt(key, f.value.asInt())
-	case f.value.IsInt8():
-		enc.AddInt8(key, f.value.asInt8())
-	case f.value.IsInt16():
-		enc.AddInt16(key, f.value.asInt16())
-	case f.value.IsInt32():
-		enc.AddInt32(key, f.value.asInt32())
-	case f.value.IsInt64():
-		enc.AddInt64(key, f.value.asInt64())
-	case f.value.IsUint():
-		enc.AddUint(key, f.value.asUint())
-	case f.value.IsUint8():
-		enc.AddUint8(key, f.value.asUint8())
-	case f.value.IsUint16():
-		enc.AddUint16(key, f.value.asUint16())
-	case f.value.IsUint32():
-		enc.AddUint32(key, f.value.asUint32())
-	case f.value.IsUint64():
-		enc.AddUint64(key, f.value.asUint64())
-	case f.value.IsUintptr():
-		enc.AddUintptr(key, f.value.asUintptr())
-	case f.value.IsTime():
-		enc.AddTime(key, f.value.asTime())
-	case f.value.IsDuration():
-		enc.AddDuration(key, f.value.asDuration())
-	case f.value.IsFloat32():
-		enc.AddFloat32(key, f.value.asFloat32())
-	case f.value.IsFloat64():
-		enc.AddFloat64(key, f.value.asFloat64())
-	case f.value.IsComplex64():
-		enc.AddComplex64(key, f.value.asComplex64())
-	case f.value.IsComplex128():
-		enc.AddComplex128(key, f.value.asComplex128())
-	case f.value.IsString():
-		enc.AddString(key, f.value.asString())
-	case f.value.IsError():
-		enc.AddError(key, f.value.asError())
-	default:
-		enc.AddAny(key, f.value)
-	}
-}
-
-func (f Field) Type() Type {
-	return f.value.vtype
-}
-
-func (f Field) Key() Key {
-	return f.key
-}
-
-func (f Field) Value() Value {
-	return f.value
-}
-
-func (f Field) AsInterface() interface{} {
-	return f.value.AsInterface()
+	Key   string
+	Value Value
 }
 
 // String implent stringer.
 func (f Field) String() string {
-	return fmt.Sprintf("%s=%+v", f.key, f.value.AsInterface())
+	return fmt.Sprintf("%s=%+v", f.Key, f.Value)
 }

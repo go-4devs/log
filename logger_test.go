@@ -13,7 +13,6 @@ import (
 	"gitoa.ru/go-4devs/log/level"
 )
 
-//nolint:gochecknoglobals
 var requestID ctxKey = "requestID"
 
 func TestFields(t *testing.T) {
@@ -28,14 +27,14 @@ func TestFields(t *testing.T) {
 	ctx := context.Background()
 	buf := &bytes.Buffer{}
 	log := log.New(log.WithWriter(buf)).
-		With(log.WithLevel("level", level.Info), log.WithClosure)
-	success := "msg=\"message\" err=file already exists version=0.1.0 obj={id:uid} closure=some closure data level=info\n"
+		With(log.WithLevel("level", level.Info))
+	success := "msg=message err=\"file already exists\" version=0.1.0 obj={id:uid} closure=\"some closure data\" level=info\n"
 
 	log.InfoKVs(ctx, "message",
 		"err", os.ErrExist,
 		"version", "0.1.0",
 		"obj", rObj{id: "uid"},
-		"closure", func() string {
+		"closure", func() any {
 			atomic.AddInt32(&cnt, 1)
 
 			return "some closure data"
@@ -43,11 +42,11 @@ func TestFields(t *testing.T) {
 	)
 
 	log.DebugKVs(ctx, "debug message",
-		"closure", func() string {
+		"closure", field.ClosureFn(func() any {
 			atomic.AddInt32(&cnt, 1)
 
 			return "some debug data"
-		},
+		}),
 	)
 
 	if success != buf.String() {
@@ -64,7 +63,7 @@ func TestWriter(t *testing.T) {
 
 	ctx := context.Background()
 
-	success := "msg=\"info message\" err=file already exists requestID=6a5fa048-7181-11ea-bc55-0242ac1311113 level=info\n"
+	success := "msg=\"info message\" err=\"file already exists\" requestID=6a5fa048-7181-11ea-bc55-0242ac1311113 level=info\n"
 	buf := &bytes.Buffer{}
 	logger := log.New(log.WithWriter(buf)).With(log.WithContextValue(requestID), log.WithLevel("level", level.Info))
 

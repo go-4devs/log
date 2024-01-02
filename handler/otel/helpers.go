@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"gitoa.ru/go-4devs/log/entry"
+	"gitoa.ru/go-4devs/log/field"
 	"gitoa.ru/go-4devs/log/level"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -48,9 +49,11 @@ func addEvent(ctx context.Context, data *entry.Entry) {
 		attribute.Int(fieldSeverityNumber, int(lvl)),
 	)
 
-	for _, field := range data.Fields() {
-		attrs = append(attrs, attribute.String(string(field.Key()), field.Value().String()))
-	}
+	data.Fields().Fields(func(f field.Field) bool {
+		attrs = append(attrs, attribute.String(f.Key, f.Value.String()))
+
+		return true
+	})
 
 	span.AddEvent(data.Message(), trace.WithAttributes(attrs...))
 }

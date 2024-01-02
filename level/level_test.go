@@ -7,6 +7,8 @@ import (
 )
 
 func TestMarshalJSON(t *testing.T) {
+	t.Parallel()
+
 	levels := map[level.Level]string{
 		level.Emergency: `"emerg"`,
 		level.Alert:     `"alert"`,
@@ -22,8 +24,10 @@ func TestMarshalJSON(t *testing.T) {
 		actual, err := level.MarshalJSON()
 		if err != nil {
 			t.Errorf("%s got err: %s", level, err)
+
 			continue
 		}
+
 		if string(actual) != expect {
 			t.Errorf("%s got: %s expect: %s", level, actual, expect)
 		}
@@ -31,6 +35,8 @@ func TestMarshalJSON(t *testing.T) {
 }
 
 func TestUnmarshalJSON(t *testing.T) {
+	t.Parallel()
+
 	levels := map[level.Level][]string{
 		level.Emergency: {`"emerg"`, `"Emerg"`},
 		level.Alert:     {`"alert"`, `"ALERT"`},
@@ -47,13 +53,13 @@ func TestUnmarshalJSON(t *testing.T) {
 			var level level.Level
 			if err := level.UnmarshalJSON([]byte(actual)); err != nil {
 				t.Errorf("%s got err: %s", level, err)
+
 				continue
 			}
 
 			if !level.Is(expect) {
 				t.Errorf("%s got: %s expect: %s", actual, level, expect)
 			}
-
 		}
 	}
 }

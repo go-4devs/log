@@ -12,7 +12,6 @@ import (
 	"gitoa.ru/go-4devs/log/field"
 )
 
-//nolint:gochecknoglobals
 var (
 	errExample  = errors.New("fail")
 	_messages   = fakeMessages(1000)

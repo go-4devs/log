@@ -5,6 +5,7 @@ import (
 
 	"gitoa.ru/go-4devs/log"
 	"gitoa.ru/go-4devs/log/entry"
+	"gitoa.ru/go-4devs/log/field"
 	"gitoa.ru/go-4devs/log/level"
 	"go.uber.org/zap"
 )
@@ -38,10 +39,12 @@ func Development(options ...zap.Option) log.Logger {
 // New create handler by zap logger.
 func New(logger *zap.Logger) log.Logger {
 	return func(ctx context.Context, data *entry.Entry) (int, error) {
-		zf := make([]zap.Field, data.Fields().Len())
-		for i, field := range data.Fields() {
-			zf[i] = zap.Any(string(field.Key()), field.AsInterface())
-		}
+		zf := make([]zap.Field, 0, data.Fields().Len())
+		data.Fields().Fields(func(f field.Field) bool {
+			zf = append(zf, zap.Any(f.Key, f.Value.Any()))
+
+			return true
+		})
 
 		switch data.Level() {
 		case level.Emergency:

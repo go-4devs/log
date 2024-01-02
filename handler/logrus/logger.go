@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitoa.ru/go-4devs/log"
 	"gitoa.ru/go-4devs/log/entry"
+	"gitoa.ru/go-4devs/log/field"
 	"gitoa.ru/go-4devs/log/level"
 )
 
@@ -18,9 +19,11 @@ func Standard() log.Logger {
 func New(log *logrus.Logger) log.Logger {
 	return func(ctx context.Context, data *entry.Entry) (int, error) {
 		lrgFields := make(logrus.Fields, data.Fields().Len())
-		for _, field := range data.Fields() {
-			lrgFields[string(field.Key())] = field.AsInterface()
-		}
+		data.Fields().Fields(func(f field.Field) bool {
+			lrgFields[f.Key] = f.Value.Any()
+
+			return true
+		})
 
 		entry := log.WithContext(ctx).WithFields(lrgFields)
 

@@ -1,119 +1,129 @@
 package log
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
-	"strings"
-	"sync"
 
 	"gitoa.ru/go-4devs/log/entry"
+	"gitoa.ru/go-4devs/log/field"
+	"gitoa.ru/go-4devs/log/internal/buffer"
 )
 
+// Keys for "built-in" attributes.
+const (
+	// TimeKey is the key used by the built-in handlers for the time
+	// when the log method is called. The associated Value is a [time.Time].
+	KeyTime = "time"
+	// LevelKey is the key used by the built-in handlers for the level
+	// of the log call. The associated value is a [Level].
+	KeyLevel = "level"
+	// MessageKey is the key used by the built-in handlers for the
+	// message of the log call. The associated value is a string.
+	KeyMessage = "msg"
+	// SourceKey is the key used by the built-in handlers for the source file
+	// and line of the log call. The associated value is a string.
+	KeySource = "source"
+)
+
+func WithWriter(w io.Writer) func(*option) {
+	return func(o *option) {
+		o.out = w
+	}
+}
+
+func WithStdout() func(*option) {
+	return func(o *option) {
+		o.out = os.Stdout
+	}
+}
+
+// WithStringFormat sets format as simple string.
+func WithStringFormat() func(*option) {
+	return func(o *option) {
+		o.format = formatText()
+	}
+}
+
+// WithJSONFormat sets json output format.
+func WithJSONFormat() func(*option) {
+	return func(o *option) {
+		o.format = formatJSON()
+	}
+}
+
+type option struct {
+	format func(io.Writer, *entry.Entry) (int, error)
+	out    io.Writer
+}
+
 // New creates standart logger.
-func New(opts ...Option) Logger {
-	logger := log{e: stringFormat(), w: os.Stderr}
+func New(opts ...func(*option)) Logger {
+	log := option{
+		format: formatText(),
+		out:    os.Stderr,
+	}
 
 	for _, opt := range opts {
-		opt(&logger)
+		opt(&log)
 	}
 
 	return func(_ context.Context, entry *entry.Entry) (int, error) {
-		b, err := logger.e(entry)
-		if err != nil {
-			return 0, fmt.Errorf("enode err: %w", err)
+		return log.format(log.out, entry)
+	}
+}
+
+func formatText() func(io.Writer, *entry.Entry) (int, error) {
+	enc := field.NewEncoderText()
+
+	return func(w io.Writer, entry *entry.Entry) (int, error) {
+		buf := buffer.New()
+		defer func() {
+			buf.Free()
+		}()
+
+		*buf = enc.AppendField(*buf, field.String(KeyMessage, entry.Message()))
+
+		for _, field := range entry.Fields() {
+			*buf = enc.AppendField(*buf, field)
 		}
 
-		n, err := logger.w.Write(b)
+		_, _ = buf.WriteString("\n")
+
+		n, err := w.Write(*buf)
 		if err != nil {
-			return 0, fmt.Errorf("failed write: %w", err)
+			return 0, fmt.Errorf("format text:%w", err)
 		}
 
 		return n, nil
 	}
 }
 
-// Option configure log.
-type Option func(*log)
+func formatJSON() func(w io.Writer, entry *entry.Entry) (int, error) {
+	enc := field.NewEncoderJSON()
 
-// Encode sets formats and encode output message.
-type Encode func(*entry.Entry) ([]byte, error)
-
-type log struct {
-	w io.Writer
-	e Encode
-}
-
-// WithWriter sets writer logger.
-func WithWriter(writer io.Writer) Option {
-	return func(l *log) {
-		l.w = writer
-	}
-}
-
-// WithStdout sets logged to os.Stdout.
-func WithStdout() Option {
-	return WithWriter(os.Stdout)
-}
-
-// WithEncode sets format log.
-func WithEncode(e Encode) Option {
-	return func(l *log) {
-		l.e = e
-	}
-}
-
-// WithStringFormat sets format as simple string.
-func WithStringFormat() Option {
-	return WithEncode(stringFormat())
-}
-
-// WithJSONFormat sets json output format.
-func WithJSONFormat() Option {
-	return WithEncode(jsonFormat)
-}
-
-//nolint:forcetypeassert
-func stringFormat() func(entry *entry.Entry) ([]byte, error) {
-	pool := sync.Pool{
-		New: func() interface{} {
-			return &bytes.Buffer{}
-		},
-	}
-
-	return func(entry *entry.Entry) ([]byte, error) {
-		buf := pool.Get().(*bytes.Buffer)
-		buf.Reset()
-
+	return func(w io.Writer, entry *entry.Entry) (int, error) {
+		buf := buffer.New()
 		defer func() {
-			pool.Put(buf)
+			buf.Free()
 		}()
 
-		buf.WriteString("msg=\"")
-		buf.WriteString(strings.TrimSpace(entry.Message()))
-		buf.WriteString("\"")
+		_, _ = buf.WriteString("{")
+		*buf = enc.AppendField(*buf, field.String(KeyMessage, entry.Message()))
 
 		for _, field := range entry.Fields() {
-			buf.WriteString(" ")
-			buf.WriteString(string(field.Key()))
-			buf.WriteString("=")
-			buf.WriteString(field.Value().String())
+			*buf = enc.AppendField(*buf, field)
 		}
 
-		buf.WriteString("\n")
+		_, _ = buf.WriteString("}")
+		_, _ = buf.WriteString("\n")
 
-		return buf.Bytes(), nil
+		n, err := w.Write(*buf)
+		if err != nil {
+			return 0, fmt.Errorf("format json:%w", err)
+		}
+
+		return n, nil
 	}
-}
-
-func jsonFormat(entry *entry.Entry) ([]byte, error) {
-	res, err := json.Marshal(entry.AddString("msg", entry.Message()).Fields().AsMap())
-	if err != nil {
-		return nil, fmt.Errorf("marshal err: %w", err)
-	}
-
-	return append(res, []byte("\n")...), nil
 }

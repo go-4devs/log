@@ -12,8 +12,6 @@ import (
 	"gitoa.ru/go-4devs/log/level"
 )
 
-var _ Middleware = WithClosure
-
 // Middleware handle.
 type Middleware func(ctx context.Context, e *entry.Entry, handler Logger) (int, error)
 
@@ -62,18 +60,6 @@ func WithLevel(key string, lvl level.Level) Middleware {
 	}
 }
 
-func WithClosure(ctx context.Context, data *entry.Entry, handler Logger) (int, error) {
-	for i, field := range data.Fields() {
-		if field.Type().IsAny() {
-			if f, ok := field.AsInterface().(func() string); ok {
-				data.Fields().Set(i, field.Key().String(f()))
-			}
-		}
-	}
-
-	return handler(ctx, data)
-}
-
 // KeyValue add field by const key value.
 func KeyValue(key string, value interface{}) Middleware {
 	return func(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
@@ -111,7 +97,7 @@ func WithCaller(key string, depth int, full bool) Middleware {
 // WithTime adds time.
 func WithTime(key, format string) Middleware {
 	return func(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
-		return handler(ctx, e.Add(field.Time(key, time.Now())))
+		return handler(ctx, e.Add(field.FormatTime(key, format, time.Now())))
 	}
 }
 

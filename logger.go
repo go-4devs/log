@@ -2,7 +2,6 @@ package log
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -14,10 +13,7 @@ import (
 
 var _ io.Writer = (Logger)(nil)
 
-var (
-	ErrIgnoredKey    = errors.New("ignored key without a value")
-	ErrNonStringKeys = errors.New("ignored key-value pairs with non-string keys")
-)
+const badKey = "!BADKEY"
 
 func writeOutput(_ int, err error) {
 	if err != nil {
@@ -52,7 +48,7 @@ func (l Logger) writef(ctx context.Context, level level.Level, format string, ar
 	return l(ctx, data.SetLevel(level).SetMessagef(format, args...))
 }
 
-func (l Logger) kv(ctx context.Context, args ...interface{}) field.Fields {
+func (l Logger) kv(_ context.Context, args ...interface{}) field.Fields {
 	kvEntry := entry.Get()
 
 	defer func() {
@@ -67,21 +63,20 @@ func (l Logger) kv(ctx context.Context, args ...interface{}) field.Fields {
 		}
 
 		if i == len(args)-1 {
-			writeOutput(l.write(ctx, level.Critical, fmt.Sprint("Ignored key without a value.", args[i]), kvEntry.Fields()...))
+			kvEntry = kvEntry.AddAny(badKey, args[i])
 
 			break
 		}
 
-		i++
-
-		key, val := args[i-1], args[i]
+		key, val := args[i], args[i+1]
 		if keyStr, ok := key.(string); ok {
 			kvEntry = kvEntry.AddAny(keyStr, val)
+			i++
 
 			continue
 		}
 
-		writeOutput(l.write(ctx, level.Critical, fmt.Sprint("Ignored key-value pairs with non-string keys.", key, val), kvEntry.Fields()...))
+		kvEntry = kvEntry.AddAny(badKey, args[i])
 	}
 
 	return kvEntry.Fields()
