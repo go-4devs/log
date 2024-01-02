@@ -10,7 +10,7 @@ import (
 
 //nolint:gochecknoglobals
 var global = With(New(),
-	WithCaller(KeySource, 1, false),
+	WithSource(2),
 	WithLevel(KeyLevel, level.Debug),
 	WithExit(level.Alert),
 	WithPanic(level.Emergency),

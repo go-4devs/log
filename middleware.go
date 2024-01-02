@@ -86,6 +86,7 @@ func WithContextValue(keys ...fmt.Stringer) Middleware {
 }
 
 // WithCaller adds called file.
+// Deprecated: use WithSource.
 func WithCaller(key string, depth int, full bool) Middleware {
 	const offset = 2
 
