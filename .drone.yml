@@ -70,3 +70,28 @@ steps:
 volumes:
 - name: deps
   temp: {}
+
+---
+kind: pipeline
+type: docker
+name: zap
+
+steps:
+- name: test
+  image: golang:1.21.5
+  volumes:
+  - name: deps
+    path: /go/src/mod
+  commands:
+  - cd handler/zap
+  - go test
+
+- name: golangci-lint
+  image: golangci/golangci-lint:v1.55
+  commands:
+  - cd handler/zap
+  - golangci-lint run
+
+volumes:
+- name: deps
+  temp: {}
