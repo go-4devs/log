@@ -1,4 +1,4 @@
-//nolint: exhaustruct
+// nolint: exhaustruct
 package field
 
 import (
@@ -504,7 +504,7 @@ func (v Value) append(dst []byte) []byte {
 	}
 }
 
-//nolint: gocyclo,cyclop
+// nolint: gocyclo,cyclop
 func (v Value) Any() any {
 	switch v.Kind {
 	case KindAny, KindBinary:
@@ -542,7 +542,7 @@ func (v Value) Any() any {
 	return v.any
 }
 
-//nolint: forcetypeassert
+// nolint: forcetypeassert
 func (v Value) AsString() string {
 	if v.Kind != KindString {
 		return ""

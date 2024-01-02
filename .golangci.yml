@@ -1,3 +1,6 @@
+run:
+  timeout: 5m
+
 linters-settings:
     dupl:
       threshold: 100
@@ -52,6 +55,7 @@ linters:
       - maligned
 
       - depguard # need configure
+      - nolintlint # use with space
 
 issues:
   # Excluding configuration per-path, per-linter, per-text and per-source

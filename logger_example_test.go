@@ -92,7 +92,7 @@ var (
 	float64Val = float64(math.MaxFloat64)
 
 	minute  = time.Minute
-	timeVal = time.Unix(0, math.MaxInt32)
+	timeVal = time.Unix(0, math.MaxInt32).In(time.UTC)
 )
 
 func ExampleNew_anyField() {
@@ -108,7 +108,7 @@ func ExampleNew_anyField() {
 		field.Any("error", errors.New("error")),
 	)
 	// Output:
-	// {"msg":"any info message","obj":{"Name":"obj name","IsEnable":false},"obj":{"Name":"test obj","IsEnable":false},"int":9223372036854775807,"uint":18446744073709551615,"float":1.7976931348623157e+308,"time":"1970-01-01T03:00:02+03:00","duration":"1h0m0s","error":"error"}
+	// {"msg":"any info message","obj":{"Name":"obj name","IsEnable":false},"obj":{"Name":"test obj","IsEnable":false},"int":9223372036854775807,"uint":18446744073709551615,"float":1.7976931348623157e+308,"time":"1970-01-01T00:00:02Z","duration":"1h0m0s","error":"error"}
 }
 
 func ExampleNew_arrayField() {
@@ -130,11 +130,11 @@ func ExampleNew_arrayField() {
 		field.Complex64s("complex64s", 42, 24),
 		field.Complex128s("complex128s", 42, 24),
 		field.Durations("durations", time.Minute, time.Second),
-		field.Times("times", time.Unix(0, 42), time.Unix(0, 24)),
+		field.Times("times", time.Unix(0, 42).In(time.UTC), time.Unix(0, 24).In(time.UTC)),
 		field.Errors("errors", errors.New("error"), errors.New("error2")),
 	)
 	// Output:
-	// {"msg":"array info message","strings":["string","test str"],"bools":[true,false],"ints":[42,24],"int8s":[42,24],"int16s":[42,24],"int32s":[42,24],"int64s":[42,24],"uint8s":[255,0],"uint16s":[42,24],"uint32s":[42,24],"uint64s":[42,24],"float32s":[42,24],"float64s":[42,24],"complex64s":["(42+0i)","(24+0i)"],"complex128s":["(42+0i)","(24+0i)"],"durations":["1m0s","1s"],"times":["1970-01-01T03:00:00+03:00","1970-01-01T03:00:00+03:00"],"errors":["error","error2"]}
+	// {"msg":"array info message","strings":["string","test str"],"bools":[true,false],"ints":[42,24],"int8s":[42,24],"int16s":[42,24],"int32s":[42,24],"int64s":[42,24],"uint8s":[255,0],"uint16s":[42,24],"uint32s":[42,24],"uint64s":[42,24],"float32s":[42,24],"float64s":[42,24],"complex64s":["(42+0i)","(24+0i)"],"complex128s":["(42+0i)","(24+0i)"],"durations":["1m0s","1s"],"times":["1970-01-01T00:00:00Z","1970-01-01T00:00:00Z"],"errors":["error","error2"]}
 }
 
 func ExampleNew_pointerField() {
@@ -174,7 +174,7 @@ func ExampleNew_pointerField() {
 		field.Timep("timep", nil),
 	)
 	// Output:
-	// {"msg":"pointer info message","stringp":"test str","stringp":null,"boolp":true,"boolp":null,"intp":9223372036854775807,"intp":null,"int8p":127,"int8p":null,"int16p":32767,"int16p":null,"int32p":2147483647,"int32p":null,"int64p":9223372036854775807,"int64p":null,"uintp":18446744073709551615,"uintp":null,"uint8p":255,"uint8p":null,"uint16p":32767,"uint16p":null,"uint32p":2147483647,"uint32p":null,"uint64p":9223372036854775807,"uint64p":null,"float32p":3.4028235e+38,"float32p":null,"float64p":1.7976931348623157e+308,"float64p":null,"durationp":"1m0s","durationp":null,"timep":"1970-01-01T03:00:02+03:00","timep":null}
+	// {"msg":"pointer info message","stringp":"test str","stringp":null,"boolp":true,"boolp":null,"intp":9223372036854775807,"intp":null,"int8p":127,"int8p":null,"int16p":32767,"int16p":null,"int32p":2147483647,"int32p":null,"int64p":9223372036854775807,"int64p":null,"uintp":18446744073709551615,"uintp":null,"uint8p":255,"uint8p":null,"uint16p":32767,"uint16p":null,"uint32p":2147483647,"uint32p":null,"uint64p":9223372036854775807,"uint64p":null,"float32p":3.4028235e+38,"float32p":null,"float64p":1.7976931348623157e+308,"float64p":null,"durationp":"1m0s","durationp":null,"timep":"1970-01-01T00:00:02Z","timep":null}
 }
 
 func ExampleNew_fields() {
@@ -196,12 +196,12 @@ func ExampleNew_fields() {
 		field.Complex64("complex16", 42),
 		field.Complex128("complex128", 42),
 		field.Duration("duration", time.Minute),
-		field.Time("time", time.Unix(0, 42)),
+		field.Time("time", timeVal),
 		field.FormatTime("format_time", time.UnixDate, timeVal),
 		field.Error("error", errors.New("error")),
 	)
 	// Output:
-	// {"msg":"info message","string":"test str","bool":true,"int":42,"int8":42,"int16":42,"int32":42,"int64":42,"uint8":255,"uint16":42,"uint32":42,"uint64":42,"float32":42,"float64":42,"complex16":"(42+0i)","complex128":"(42+0i)","duration":"1m0s","time":"1970-01-01T03:00:00+03:00","format_time":"Thu Jan  1 03:00:02 MSK 1970","error":"error"}
+	// {"msg":"info message","string":"test str","bool":true,"int":42,"int8":42,"int16":42,"int32":42,"int64":42,"uint8":255,"uint16":42,"uint32":42,"uint64":42,"float32":42,"float64":42,"complex16":"(42+0i)","complex128":"(42+0i)","duration":"1m0s","time":"1970-01-01T00:00:02Z","format_time":"Thu Jan  1 00:00:02 UTC 1970","error":"error"}
 }
 
 func ExampleNew_jsonFormat() {

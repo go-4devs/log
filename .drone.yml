@@ -1,5 +1,7 @@
+---
 kind: pipeline
-name: default
+type: docker
+name: logger
 
 steps:
 - name: test 
@@ -13,6 +15,31 @@ steps:
 - name: golangci-lint
   image: golangci/golangci-lint:v1.55
   commands:
+  - golangci-lint run
+
+volumes:
+- name: deps
+  temp: {}
+
+---
+kind: pipeline
+type: docker
+name: otel
+
+steps:
+- name: test
+  image: golang:1.21.5
+  volumes:
+  - name: deps
+    path: /go/src/mod
+  commands:
+  - cd handler/otel
+  - go test 
+
+- name: golangci-lint
+  image: golangci/golangci-lint:v1.55
+  commands:
+  - cd handler/otel
   - golangci-lint run
 
 volumes:
