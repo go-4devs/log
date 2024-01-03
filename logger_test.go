@@ -27,7 +27,7 @@ func TestFields(t *testing.T) {
 	ctx := context.Background()
 	buf := &bytes.Buffer{}
 	log := log.New(log.WithWriter(buf)).
-		With(log.WithLevel("level", level.Info))
+		With(log.WithLevel(log.KeyLevel, level.Info))
 	success := "msg=message err=\"file already exists\" version=0.1.0 obj={id:uid} closure=\"some closure data\" level=info\n"
 
 	log.InfoKVs(ctx, "message",
@@ -65,7 +65,7 @@ func TestWriter(t *testing.T) {
 
 	success := "msg=\"info message\" err=\"file already exists\" requestID=6a5fa048-7181-11ea-bc55-0242ac1311113 level=info\n"
 	buf := &bytes.Buffer{}
-	logger := log.New(log.WithWriter(buf)).With(log.WithContextValue(requestID), log.WithLevel("level", level.Info))
+	logger := log.New(log.WithWriter(buf)).With(log.WithContextValue(requestID), log.WithLevel(log.KeyLevel, level.Info))
 
 	_, _ = logger.Writer(
 		context.WithValue(ctx, requestID, "6a5fa048-7181-11ea-bc55-0242ac1311113"),
@@ -91,7 +91,7 @@ func TestLogger(t *testing.T) {
 
 	ctx := context.Background()
 	buf := &bytes.Buffer{}
-	logger := log.New(log.WithWriter(buf)).With(log.WithContextValue(requestID), log.WithLevel("level", level.Info))
+	logger := log.New(log.WithWriter(buf)).With(log.WithContextValue(requestID), log.WithLevel(log.KeyLevel, level.Info))
 
 	_, err := logger(ctx, nil)
 	if err != nil {

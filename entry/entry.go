@@ -161,3 +161,24 @@ func (e *Entry) AddAny(key string, value interface{}) *Entry {
 func (e *Entry) AddString(key, value string) *Entry {
 	return e.Add(field.String(key, value))
 }
+
+func (e *Entry) Replace(key string, value field.Value) *Entry {
+	has := false
+
+	e.fields.Fields(func(f field.Field) bool {
+		if f.Key == key {
+			f.Value = value
+			has = true
+
+			return false
+		}
+
+		return true
+	})
+
+	if !has {
+		e.AddAny(key, value)
+	}
+
+	return e
+}

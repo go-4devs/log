@@ -70,3 +70,6 @@ issues:
       linters:
         - lll
         - goerr113
+    - path: example/*
+      linters:
+        - gomnd

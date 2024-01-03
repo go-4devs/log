@@ -8,9 +8,9 @@ import (
 	"gitoa.ru/go-4devs/log/level"
 )
 
-//nolint:gochecknoglobals
+//nolint:gochecknoglobals,gomnd
 var global = With(New(),
-	WithSource(2),
+	WithSource(2, TrimPath),
 	WithLevel(KeyLevel, level.Debug),
 	WithExit(level.Alert),
 	WithPanic(level.Emergency),

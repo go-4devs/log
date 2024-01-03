@@ -5,28 +5,73 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"gitoa.ru/go-4devs/log/entry"
 	"gitoa.ru/go-4devs/log/field"
 )
 
-func WithSource(depth int) Middleware {
-	const offset = 3
+func WithSource(items int, trimPath func(string) string) Middleware {
+	const (
+		skip       = 4
+		funcPrefix = "gitoa.ru/go-4devs/log.Logger"
+		skipHelper = "gitoa.ru/go-4devs/log."
+	)
+
+	items += skip
 
 	return func(ctx context.Context, data *entry.Entry, handler Logger) (int, error) {
-		pc, file, line, has := runtime.Caller(depth + offset)
-		if !has {
-			return handler(ctx, data.AddAny(KeyLevel, field.NilValue()))
+		pc := make([]uintptr, items)
+		n := runtime.Callers(skip, pc)
+
+		if n == 0 {
+			return handler(ctx, data.Add(errSourceField(skip, items)))
 		}
 
-		fnc := runtime.FuncForPC(pc)
+		pc = pc[:n] // pass only valid pcs to runtime.CallersFrames
+		frames := runtime.CallersFrames(pc)
+		prew := false
 
-		return handler(ctx, data.AddAny(KeySource, Source{
-			Func: filepath.Base(fnc.Name()),
-			File: filepath.Base(file),
-			Line: line,
-		}))
+		for {
+			frame, more := frames.Next()
+
+			has := strings.HasPrefix(frame.Function, funcPrefix)
+			if !has && prew {
+				if strings.HasPrefix(frame.Function, skipHelper) {
+					continue
+				}
+
+				return handler(ctx, data.AddAny(KeySource, Source{
+					Func: filepath.Base(frame.Function),
+					Line: frame.Line,
+					File: trimPath(frame.File),
+				}))
+			}
+
+			prew = has
+
+			if !more {
+				break
+			}
+		}
+
+		return handler(ctx, data.Add(errSourceField(skip, items)))
 	}
+}
+
+func TrimPath(file string) string {
+	idx := strings.LastIndexByte(file, '/')
+	if idx == -1 {
+		return filepath.Base(file)
+	}
+
+	// Find the penultimate separator.
+	idx = strings.LastIndexByte(file[:idx], '/')
+	if idx == -1 {
+		return filepath.Base(file)
+	}
+
+	return file[idx+1:]
 }
 
 // Source describes the location of a line of source code.
@@ -42,4 +87,8 @@ func (l Source) MarshalText() ([]byte, error) {
 
 func (l Source) MarshalJSON() ([]byte, error) {
 	return fmt.Appendf([]byte{}, `{"file":"%s","line":%d,"func":"%s"}`, l.File, l.Line, l.Func), nil
+}
+
+func errSourceField(skip, max int) field.Field {
+	return field.String(KeySource, fmt.Sprintf("source not found by frames[%d:%d]", skip, max))
 }

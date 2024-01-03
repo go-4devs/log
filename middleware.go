@@ -85,6 +85,12 @@ func WithContextValue(keys ...fmt.Stringer) Middleware {
 	}
 }
 
+func WithName(name string) Middleware {
+	return func(ctx context.Context, data *entry.Entry, handler Logger) (int, error) {
+		return handler(ctx, data.Replace(KeyName, field.StringValue(name)))
+	}
+}
+
 // WithCaller adds called file.
 // Deprecated: use WithSource.
 func WithCaller(key string, depth int, full bool) Middleware {

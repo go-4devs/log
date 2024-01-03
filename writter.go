@@ -25,6 +25,8 @@ const (
 	// SourceKey is the key used by the built-in handlers for the source file
 	// and line of the log call. The associated value is a string.
 	KeySource = "source"
+	// KeyName logger name.
+	KeyName = "name"
 )
 
 func WithWriter(w io.Writer) func(*option) {

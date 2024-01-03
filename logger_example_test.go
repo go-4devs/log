@@ -47,19 +47,19 @@ func ExampleNew_errf() {
 }
 
 func ExampleNew_debugKV() {
-	logger := log.New(log.WithStdout()).With(log.WithLevel("level", level.Debug))
+	logger := log.New(log.WithStdout()).With(log.WithLevel(log.KeyLevel, level.Debug))
 	logger.DebugKVs(ctx, "same message", "error", os.ErrNotExist)
 	// Output: msg="same message" error="file does not exist" level=debug
 }
 
 func ExampleNew_level() {
-	logger := log.New(log.WithStdout()).With(log.WithLevel("level", level.Error))
+	logger := log.New(log.WithStdout()).With(log.WithLevel(log.KeyLevel, level.Error))
 	logger.Err(ctx, "same error message")
 	// Output: msg="same error message" level=error
 }
 
 func ExampleNew_level_info() {
-	logger := log.New(log.WithStdout()).With(log.WithLevel("level", level.Error))
+	logger := log.New(log.WithStdout()).With(log.WithLevel(log.KeyLevel, level.Error))
 	logger.Info(ctx, "same message")
 	// Output:
 }
@@ -218,11 +218,11 @@ func ExampleNew_jsonFormat() {
 }
 
 func ExampleNew_textEncoding() {
-	logger := log.With(
-		log.New(log.WithStdout()),
-		log.WithLevel(log.KeyLevel, level.Debug),
-		log.GoVersion("go-version"),
-	)
+	logger := log.New(log.WithStdout()).
+		With(
+			log.WithLevel(log.KeyLevel, level.Debug),
+			log.GoVersion("go-version"),
+		)
 	logger.Err(ctx, "same error message")
 	logger.InfoKVs(ctx, "same info message", "api-version", 0.1, "obj", Obj{Name: "text value", IsEnable: true})
 
@@ -238,25 +238,29 @@ func (c ctxKey) String() string {
 }
 
 func levelInfo(ctx context.Context, entry *entry.Entry, handler log.Logger) (int, error) {
-	return handler(ctx, entry.Add(field.String("level", entry.Level().String())))
+	return handler(ctx, entry.Add(field.String(log.KeyLevel, entry.Level().String())))
 }
 
 func ExampleWith() {
 	var requestID ctxKey = "requestID"
 	vctx := context.WithValue(ctx, requestID, "6a5fa048-7181-11ea-bc55-0242ac130003")
 
-	logger := log.With(
-		log.New(log.WithStdout()),
-		levelInfo, log.WithContextValue(requestID), log.KeyValue("api", "0.1.0"), log.GoVersion("go"),
+	logger := log.New(log.WithStdout()).With(
+		levelInfo,
+		log.WithContextValue(requestID),
+		log.KeyValue("api", "0.1.0"),
+		log.GoVersion("go"),
 	)
 	logger.Info(vctx, "same message")
 	// Output: msg="same message" level=info requestID=6a5fa048-7181-11ea-bc55-0242ac130003 api=0.1.0 go=go1.21.5
 }
 
 func ExampleLogger_Print() {
-	logger := log.With(
-		log.New(log.WithStdout()),
-		levelInfo, log.KeyValue("client", "http"), log.KeyValue("api", "0.1.0"), log.GoVersion("go"),
+	logger := log.New(log.WithStdout()).With(
+		levelInfo,
+		log.KeyValue("client", "http"),
+		log.KeyValue("api", "0.1.0"),
+		log.GoVersion("go"),
 	)
 	logger.Print("same message")
 	// Output: msg="same message" level=info client=http api=0.1.0 go=go1.21.5
@@ -277,7 +281,7 @@ func Example_fieldClosureFn() {
 		return d
 	})
 
-	log := log.With(log.New(log.WithStdout()), log.WithLevel("level", level.Info))
+	log := log.New(log.WithStdout()).With(log.WithLevel(log.KeyLevel, level.Info))
 
 	log.DebugKVs(ctx, "debug message", "data", closure)
 	log.ErrKVs(ctx, "error message", "err", closure)
@@ -289,7 +293,9 @@ func Example_fieldClosureFn() {
 }
 
 func Example_withGroup() {
-	log := log.With(log.New(log.WithStdout()), log.WithLevel(log.KeyLevel, level.Info))
+	log := log.New(log.WithStdout()).With(
+		log.WithLevel(log.KeyLevel, level.Info),
+	)
 
 	log.ErrKVs(ctx, "error message",
 		field.Groups("grous_field",
