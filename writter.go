@@ -43,15 +43,18 @@ func WithStdout() func(*option) {
 
 // WithStringFormat sets format as simple string.
 func WithStringFormat() func(*option) {
-	return func(o *option) {
-		o.format = formatText()
-	}
+	return WithFormat(formatString())
 }
 
 // WithJSONFormat sets json output format.
 func WithJSONFormat() func(*option) {
+	return WithFormat(formatJSON())
+}
+
+// WithFormat sets custom output format.
+func WithFormat(format func(io.Writer, *entry.Entry) (int, error)) func(*option) {
 	return func(o *option) {
-		o.format = formatJSON()
+		o.format = format
 	}
 }
 
@@ -63,7 +66,7 @@ type option struct {
 // New creates standart logger.
 func New(opts ...func(*option)) Logger {
 	log := option{
-		format: formatText(),
+		format: formatString(),
 		out:    os.Stderr,
 	}
 
@@ -76,7 +79,61 @@ func New(opts ...func(*option)) Logger {
 	}
 }
 
-func formatText() func(io.Writer, *entry.Entry) (int, error) {
+func FormatWithBracket() func(io.Writer, *entry.Entry) (int, error) {
+	enc := field.NewEncoderText()
+
+	appendValue := func(buf *buffer.Buffer, data field.Fields, key, prefix, suffix string) *buffer.Buffer {
+		data.Fields(
+			func(f field.Field) bool {
+				if f.IsKey(key) {
+					_, _ = buf.WriteString(prefix)
+					*buf = enc.AppendValue(*buf, f.Value)
+					_, _ = buf.WriteString(suffix)
+
+					return false
+				}
+
+				return true
+			})
+
+		return buf
+	}
+
+	return func(w io.Writer, data *entry.Entry) (int, error) {
+		buf := buffer.New()
+		defer func() {
+			buf.Free()
+		}()
+
+		fields := data.Fields()
+		buf = appendValue(buf, fields, KeyTime, "", " ")
+		_, _ = buf.WriteString("[")
+		*buf = enc.AppendValue(*buf, field.StringValue(data.Level().String()))
+		_, _ = buf.WriteString("]")
+		buf = appendValue(buf, fields, KeyName, "[", "]")
+		buf = appendValue(buf, fields, KeySource, " ", " ")
+		*buf = enc.AppendValue(*buf, field.StringValue(data.Message()))
+
+		fields.Fields(func(f field.Field) bool {
+			if !f.IsKey(KeyTime, KeySource, KeyName, KeyLevel) {
+				*buf = enc.AppendField(*buf, f)
+			}
+
+			return true
+		})
+
+		_, _ = buf.WriteString("\n")
+
+		n, err := w.Write(*buf)
+		if err != nil {
+			return 0, fmt.Errorf("format text:%w", err)
+		}
+
+		return n, nil
+	}
+}
+
+func formatString() func(io.Writer, *entry.Entry) (int, error) {
 	enc := field.NewEncoderText()
 
 	return func(w io.Writer, entry *entry.Entry) (int, error) {

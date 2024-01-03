@@ -10,14 +10,17 @@ import (
 	"go.uber.org/zap"
 )
 
+// Deprecated: delete after 0.7.0
 func Nop() log.Logger {
 	return New(zap.NewNop())
 }
 
+// Deprecated: delete after 0.7.0
 func Example(options ...zap.Option) log.Logger {
 	return New(zap.NewExample(options...))
 }
 
+// Deprecated: delete after 0.7.0
 func Production(options ...zap.Option) log.Logger {
 	z, err := zap.NewProduction(options...)
 	if err != nil {
@@ -27,6 +30,7 @@ func Production(options ...zap.Option) log.Logger {
 	return New(z)
 }
 
+// Deprecated: delete after 0.7.0
 func Development(options ...zap.Option) log.Logger {
 	z, err := zap.NewDevelopment(options...)
 	if err != nil {

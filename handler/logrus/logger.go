@@ -11,11 +11,13 @@ import (
 )
 
 // Standard create new standart logrus handler.
+// Deprecated: delete after 0.7.0
 func Standard() log.Logger {
 	return New(logrus.StandardLogger())
 }
 
 // New create new logrus handler.
+// Deprecated: delete after 0.7.0
 func New(log *logrus.Logger) log.Logger {
 	return func(ctx context.Context, data *entry.Entry) (int, error) {
 		lrgFields := make(logrus.Fields, data.Fields().Len())

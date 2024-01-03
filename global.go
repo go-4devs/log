@@ -3,6 +3,7 @@ package log
 import (
 	"context"
 	"io"
+	"time"
 
 	"gitoa.ru/go-4devs/log/field"
 	"gitoa.ru/go-4devs/log/level"
@@ -10,7 +11,7 @@ import (
 
 //nolint:gochecknoglobals,gomnd
 var global = With(New(),
-	WithSource(2, TrimPath),
+	WithTime(KeyTime, time.RFC3339),
 	WithLevel(KeyLevel, level.Debug),
 	WithExit(level.Alert),
 	WithPanic(level.Emergency),
