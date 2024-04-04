@@ -38,6 +38,7 @@ func With(logger Logger, mw ...Middleware) Logger {
 			if curI == lastI {
 				return logger(currentCtx, currentEntry)
 			}
+
 			curI++
 			n, err := mw[curI](currentCtx, currentEntry, chainHandler)
 			curI--

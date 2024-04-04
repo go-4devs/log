@@ -21,7 +21,7 @@ func main() {
 	logger.AlertKV(ctx, "alert message new logger", field.String("string", "value"))
 	service(ctx, logger)
 
-	strLogger := log.New(log.WithFormat(log.FormatWithBracket())).With(log.WithSource(10, log.TrimPath), log.WithTime(log.KeyTime, time.RFC3339))
+	strLogger := log.New(log.WithFormat(log.FormatWithBracket(field.NewEncoderText()))).With(log.WithSource(10, log.TrimPath), log.WithTime(log.KeyTime, time.RFC3339))
 	strLogger.AlertKV(ctx, "alert message new txt logger", field.String("string", "value"))
 	service(ctx, strLogger)
 }
