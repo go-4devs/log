@@ -20,7 +20,7 @@ func exampleWithTime(key, format string) log.Middleware {
 
 func ExampleFormatWithBracket() {
 	ctx := context.Background()
-	logger := log.New(log.WithFormat(log.FormatWithBracket()), log.WithStdout()).With(
+	logger := log.New(log.WithFormat(log.FormatWithBracket(field.NewEncoderText())), log.WithStdout()).With(
 		log.WithSource(10, filepath.Base),
 		// log.WithTime(log.KeyTime, time.RFC3339),
 		exampleWithTime(log.KeyTime, time.RFC3339),

@@ -43,12 +43,12 @@ func WithStdout() func(*option) {
 
 // WithStringFormat sets format as simple string.
 func WithStringFormat() func(*option) {
-	return WithFormat(formatString())
+	return WithFormat(FormatString(field.NewEncoderText()))
 }
 
 // WithJSONFormat sets json output format.
 func WithJSONFormat() func(*option) {
-	return WithFormat(formatJSON())
+	return WithFormat(FormatJSON(field.NewEncoderJSON()))
 }
 
 // WithFormat sets custom output format.
@@ -66,7 +66,7 @@ type option struct {
 // New creates standart logger.
 func New(opts ...func(*option)) Logger {
 	log := option{
-		format: formatString(),
+		format: FormatString(field.NewEncoderText()),
 		out:    os.Stderr,
 	}
 
@@ -79,9 +79,12 @@ func New(opts ...func(*option)) Logger {
 	}
 }
 
-func FormatWithBracket() func(io.Writer, *entry.Entry) (int, error) {
-	enc := field.NewEncoderText()
+type Encoder interface {
+	AppendValue(dst []byte, val field.Value) []byte
+	AppendField(dst []byte, val field.Field) []byte
+}
 
+func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 	appendValue := func(buf *buffer.Buffer, data field.Fields, key, prefix, suffix string) *buffer.Buffer {
 		data.Fields(
 			func(f field.Field) bool {
@@ -133,9 +136,7 @@ func FormatWithBracket() func(io.Writer, *entry.Entry) (int, error) {
 	}
 }
 
-func formatString() func(io.Writer, *entry.Entry) (int, error) {
-	enc := field.NewEncoderText()
-
+func FormatString(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 	return func(w io.Writer, entry *entry.Entry) (int, error) {
 		buf := buffer.New()
 		defer func() {
@@ -159,9 +160,7 @@ func formatString() func(io.Writer, *entry.Entry) (int, error) {
 	}
 }
 
-func formatJSON() func(w io.Writer, entry *entry.Entry) (int, error) {
-	enc := field.NewEncoderJSON()
-
+func FormatJSON(enc Encoder) func(w io.Writer, entry *entry.Entry) (int, error) {
 	return func(w io.Writer, entry *entry.Entry) (int, error) {
 		buf := buffer.New()
 		defer func() {
