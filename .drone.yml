@@ -5,7 +5,7 @@ name: logger
 
 steps:
 - name: test 
-  image: golang:1.21.5
+  image: golang:1.22.2
   volumes:
   - name: deps
     path: /go/src/mod
@@ -13,7 +13,7 @@ steps:
   - go test 
 
 - name: golangci-lint
-  image: golangci/golangci-lint:v1.55
+  image: golangci/golangci-lint:v1.57
   commands:
   - golangci-lint run
 

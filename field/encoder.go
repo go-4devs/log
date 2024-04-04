@@ -174,6 +174,7 @@ func needsQuoting(in string) bool {
 			if char != '\\' && (char == ' ' || char == '=' || !safeSet[char]) {
 				return true
 			}
+
 			i++
 
 			continue

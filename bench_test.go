@@ -166,7 +166,9 @@ func BenchmarkDisabledAccumulatedContext(b *testing.B) {
 
 	b.Run("4devs/log.Context", func(b *testing.B) {
 		b.ResetTimer()
+
 		logger := NewLogger().With(log.GoVersion("goversion"))
+
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				logger.InfoKV(ctx, getMessage(0), fakeFields()...)
