@@ -82,13 +82,13 @@ type Source struct {
 }
 
 func (l Source) MarshalText() ([]byte, error) {
-	return []byte(fmt.Sprintf("%s:%d", l.File, l.Line)), nil
+	return fmt.Appendf(nil, "%s:%d", l.File, l.Line), nil
 }
 
 func (l Source) MarshalJSON() ([]byte, error) {
 	return fmt.Appendf([]byte{}, `{"file":"%s","line":%d,"func":"%s"}`, l.File, l.Line, l.Func), nil
 }
 
-func errSourceField(skip, max int) field.Field {
-	return field.String(KeySource, fmt.Sprintf("source not found by frames[%d:%d]", skip, max))
+func errSourceField(skip, mframe int) field.Field {
+	return field.String(KeySource, fmt.Sprintf("source not found by frames[%d:%d]", skip, mframe))
 }

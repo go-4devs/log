@@ -28,172 +28,118 @@ func (l Logger) Write(in []byte) (int, error) {
 	return l.write(context.Background(), level.Info, string(in))
 }
 
-func (l Logger) write(ctx context.Context, level level.Level, msg string, fields ...field.Field) (int, error) {
-	data := entry.Get()
-
-	defer func() {
-		entry.Put(data)
-	}()
-
-	return l(ctx, data.SetLevel(level).SetMessage(msg).Add(fields...))
-}
-
-func (l Logger) writef(ctx context.Context, level level.Level, format string, args ...interface{}) (int, error) {
-	data := entry.Get()
-
-	defer func() {
-		entry.Put(data)
-	}()
-
-	return l(ctx, data.SetLevel(level).SetMessagef(format, args...))
-}
-
-func (l Logger) kv(_ context.Context, args ...interface{}) field.Fields {
-	kvEntry := entry.Get()
-
-	defer func() {
-		entry.Put(kvEntry)
-	}()
-
-	for i := 0; i < len(args); i++ {
-		if f, ok := args[i].(field.Field); ok {
-			kvEntry = kvEntry.Add(f)
-
-			continue
-		}
-
-		if i == len(args)-1 {
-			kvEntry = kvEntry.AddAny(badKey, args[i])
-
-			break
-		}
-
-		key, val := args[i], args[i+1]
-		if keyStr, ok := key.(string); ok {
-			kvEntry = kvEntry.AddAny(keyStr, val)
-			i++
-
-			continue
-		}
-
-		kvEntry = kvEntry.AddAny(badKey, args[i])
-	}
-
-	return kvEntry.Fields()
-}
-
 // With adds middlewares to logger.
 func (l Logger) With(mw ...Middleware) Logger {
 	return With(l, mw...)
 }
 
 // Emerg log by emergency level.
-func (l Logger) Emerg(ctx context.Context, args ...interface{}) {
+func (l Logger) Emerg(ctx context.Context, args ...any) {
 	writeOutput(l.writef(ctx, level.Emergency, "", args...))
 }
 
 // Alert log by alert level.
-func (l Logger) Alert(ctx context.Context, args ...interface{}) {
+func (l Logger) Alert(ctx context.Context, args ...any) {
 	writeOutput(l.writef(ctx, level.Alert, "", args...))
 }
 
 // Crit log by critical level.
-func (l Logger) Crit(ctx context.Context, args ...interface{}) {
+func (l Logger) Crit(ctx context.Context, args ...any) {
 	writeOutput(l.writef(ctx, level.Critical, "", args...))
 }
 
 // Err log by error level.
-func (l Logger) Err(ctx context.Context, args ...interface{}) {
+func (l Logger) Err(ctx context.Context, args ...any) {
 	writeOutput(l.writef(ctx, level.Error, "", args...))
 }
 
 // Warn log by warning level.
-func (l Logger) Warn(ctx context.Context, args ...interface{}) {
+func (l Logger) Warn(ctx context.Context, args ...any) {
 	writeOutput(l.writef(ctx, level.Warning, "", args...))
 }
 
 // Notice log by notice level.
-func (l Logger) Notice(ctx context.Context, args ...interface{}) {
+func (l Logger) Notice(ctx context.Context, args ...any) {
 	writeOutput(l.writef(ctx, level.Notice, "", args...))
 }
 
 // Info log by info level.
-func (l Logger) Info(ctx context.Context, args ...interface{}) {
+func (l Logger) Info(ctx context.Context, args ...any) {
 	writeOutput(l.writef(ctx, level.Info, "", args...))
 }
 
 // Debug log by debug level.
-func (l Logger) Debug(ctx context.Context, args ...interface{}) {
+func (l Logger) Debug(ctx context.Context, args ...any) {
 	writeOutput(l.writef(ctx, level.Debug, "", args...))
 }
 
 // Print log by info level and arguments.
-func (l Logger) Print(args ...interface{}) {
+func (l Logger) Print(args ...any) {
 	writeOutput(l.writef(context.Background(), level.Info, "", args...))
 }
 
 // Fatal log by alert level and arguments.
-func (l Logger) Fatal(args ...interface{}) {
+func (l Logger) Fatal(args ...any) {
 	writeOutput(l.writef(context.Background(), level.Alert, "", args...))
 }
 
 // Panic log by emergency level and arguments.
-func (l Logger) Panic(args ...interface{}) {
+func (l Logger) Panic(args ...any) {
 	writeOutput(l.writef(context.Background(), level.Emergency, "", args...))
 }
 
 // Println log by info level and arguments.
-func (l Logger) Println(args ...interface{}) {
+func (l Logger) Println(args ...any) {
 	writeOutput(l.write(context.Background(), level.Info, fmt.Sprintln(args...)))
 }
 
 // Fatalln log by alert level and arguments.
-func (l Logger) Fatalln(args ...interface{}) {
+func (l Logger) Fatalln(args ...any) {
 	writeOutput(l.write(context.Background(), level.Alert, fmt.Sprintln(args...)))
 }
 
 // Panicln log by emergency level and arguments.
-func (l Logger) Panicln(args ...interface{}) {
+func (l Logger) Panicln(args ...any) {
 	writeOutput(l.write(context.Background(), level.Emergency, fmt.Sprintln(args...)))
 }
 
 // EmergKVs sugared log by emergency level and key-values.
-func (l Logger) EmergKVs(ctx context.Context, msg string, args ...interface{}) {
+func (l Logger) EmergKVs(ctx context.Context, msg string, args ...any) {
 	writeOutput(l.write(ctx, level.Emergency, msg, l.kv(ctx, args...)...))
 }
 
 // AlertKVs sugared log by alert level and key-values.
-func (l Logger) AlertKVs(ctx context.Context, msg string, args ...interface{}) {
+func (l Logger) AlertKVs(ctx context.Context, msg string, args ...any) {
 	writeOutput(l.write(ctx, level.Alert, msg, l.kv(ctx, args...)...))
 }
 
 // CritKVs sugared log by critcal level and key-values.
-func (l Logger) CritKVs(ctx context.Context, msg string, args ...interface{}) {
+func (l Logger) CritKVs(ctx context.Context, msg string, args ...any) {
 	writeOutput(l.write(ctx, level.Critical, msg, l.kv(ctx, args...)...))
 }
 
 // ErrKVs sugared log by error level and key-values.
-func (l Logger) ErrKVs(ctx context.Context, msg string, args ...interface{}) {
+func (l Logger) ErrKVs(ctx context.Context, msg string, args ...any) {
 	writeOutput(l.write(ctx, level.Error, msg, l.kv(ctx, args...)...))
 }
 
 // WarnKVs sugared log by warning level and key-values.
-func (l Logger) WarnKVs(ctx context.Context, msg string, args ...interface{}) {
+func (l Logger) WarnKVs(ctx context.Context, msg string, args ...any) {
 	writeOutput(l.write(ctx, level.Warning, msg, l.kv(ctx, args...)...))
 }
 
 // NoticeKVs sugared log by notice level and key-values.
-func (l Logger) NoticeKVs(ctx context.Context, msg string, args ...interface{}) {
+func (l Logger) NoticeKVs(ctx context.Context, msg string, args ...any) {
 	writeOutput(l.write(ctx, level.Notice, msg, l.kv(ctx, args...)...))
 }
 
 // InfoKVs sugared log by info level and key-values.
-func (l Logger) InfoKVs(ctx context.Context, msg string, args ...interface{}) {
+func (l Logger) InfoKVs(ctx context.Context, msg string, args ...any) {
 	writeOutput(l.write(ctx, level.Info, msg, l.kv(ctx, args...)...))
 }
 
 // DebugKVs sugared log by debug level and key-values.
-func (l Logger) DebugKVs(ctx context.Context, msg string, args ...interface{}) {
+func (l Logger) DebugKVs(ctx context.Context, msg string, args ...any) {
 	writeOutput(l.write(ctx, level.Debug, msg, l.kv(ctx, args...)...))
 }
 
@@ -238,57 +184,57 @@ func (l Logger) DebugKV(ctx context.Context, msg string, args ...field.Field) {
 }
 
 // Emergf log by emergency level by format and arguments.
-func (l Logger) Emergf(ctx context.Context, format string, args ...interface{}) {
+func (l Logger) Emergf(ctx context.Context, format string, args ...any) {
 	writeOutput(l.writef(ctx, level.Emergency, format, args...))
 }
 
 // Alertf log by alert level by format and arguments.
-func (l Logger) Alertf(ctx context.Context, format string, args ...interface{}) {
+func (l Logger) Alertf(ctx context.Context, format string, args ...any) {
 	writeOutput(l.writef(ctx, level.Alert, format, args...))
 }
 
 // Critf log by critical level by format and arguments.
-func (l Logger) Critf(ctx context.Context, format string, args ...interface{}) {
+func (l Logger) Critf(ctx context.Context, format string, args ...any) {
 	writeOutput(l.writef(ctx, level.Critical, format, args...))
 }
 
 // Errf log by error level by format and arguments.
-func (l Logger) Errf(ctx context.Context, format string, args ...interface{}) {
+func (l Logger) Errf(ctx context.Context, format string, args ...any) {
 	writeOutput(l.writef(ctx, level.Error, format, args...))
 }
 
 // Warnf log by warning level by format and arguments.
-func (l Logger) Warnf(ctx context.Context, format string, args ...interface{}) {
+func (l Logger) Warnf(ctx context.Context, format string, args ...any) {
 	writeOutput(l.writef(ctx, level.Warning, format, args...))
 }
 
 // Noticef log by notice level by format and arguments.
-func (l Logger) Noticef(ctx context.Context, format string, args ...interface{}) {
+func (l Logger) Noticef(ctx context.Context, format string, args ...any) {
 	writeOutput(l.writef(ctx, level.Notice, format, args...))
 }
 
 // Infof log by info level by format and arguments.
-func (l Logger) Infof(ctx context.Context, format string, args ...interface{}) {
+func (l Logger) Infof(ctx context.Context, format string, args ...any) {
 	writeOutput(l.writef(ctx, level.Info, format, args...))
 }
 
 // Debugf log by debug level by format and arguments.
-func (l Logger) Debugf(ctx context.Context, format string, args ...interface{}) {
+func (l Logger) Debugf(ctx context.Context, format string, args ...any) {
 	writeOutput(l.writef(ctx, level.Debug, format, args...))
 }
 
 // Printf log by info level by format and arguments without context.
-func (l Logger) Printf(format string, args ...interface{}) {
+func (l Logger) Printf(format string, args ...any) {
 	writeOutput(l.writef(context.Background(), level.Info, format, args...))
 }
 
 // Fatalf log by alert level by format and arguments without context.
-func (l Logger) Fatalf(format string, args ...interface{}) {
+func (l Logger) Fatalf(format string, args ...any) {
 	writeOutput(l.writef(context.Background(), level.Alert, format, args...))
 }
 
 // Panicf log by emergency level and arguments without context.
-func (l Logger) Panicf(format string, args ...interface{}) {
+func (l Logger) Panicf(format string, args ...any) {
 	writeOutput(l.writef(context.Background(), level.Emergency, format, args...))
 }
 
@@ -301,12 +247,67 @@ func (l Logger) Writer(ctx context.Context, level level.Level, fields ...field.F
 	}
 }
 
+func (l Logger) kv(_ context.Context, args ...any) field.Fields {
+	kvEntry := entry.Get()
+
+	defer func() {
+		entry.Put(kvEntry)
+	}()
+
+	for i := 0; i < len(args); i++ {
+		if f, ok := args[i].(field.Field); ok {
+			kvEntry = kvEntry.Add(f)
+
+			continue
+		}
+
+		if i == len(args)-1 {
+			kvEntry = kvEntry.AddAny(badKey, args[i])
+
+			break
+		}
+
+		key, val := args[i], args[i+1]
+		if keyStr, ok := key.(string); ok {
+			kvEntry = kvEntry.AddAny(keyStr, val)
+			i++
+
+			continue
+		}
+
+		kvEntry = kvEntry.AddAny(badKey, args[i])
+	}
+
+	return kvEntry.Fields()
+}
+
+func (l Logger) write(ctx context.Context, level level.Level, msg string, fields ...field.Field) (int, error) {
+	data := entry.Get()
+
+	defer func() {
+		entry.Put(data)
+	}()
+
+	return l(ctx, data.SetLevel(level).SetMessage(msg).Add(fields...))
+}
+
+func (l Logger) writef(ctx context.Context, level level.Level, format string, args ...any) (int, error) {
+	data := entry.Get()
+
+	defer func() {
+		entry.Put(data)
+	}()
+
+	return l(ctx, data.SetLevel(level).SetMessagef(format, args...))
+}
+
 //nolint:containedctx
 type writer struct {
+	Logger
+
 	ctx    context.Context
 	level  level.Level
 	fields []field.Field
-	Logger
 }
 
 func (w writer) WithLevel(level level.Level) writer {

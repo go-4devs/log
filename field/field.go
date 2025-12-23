@@ -2,6 +2,7 @@ package field
 
 import (
 	"fmt"
+	"slices"
 	"time"
 )
 
@@ -502,13 +503,6 @@ func (f Field) String() string {
 	return fmt.Sprintf("%s=%+v", f.Key, f.Value)
 }
 
-// String implent stringer.
 func (f Field) IsKey(keys ...string) bool {
-	for _, key := range keys {
-		if key == f.Key {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(keys, f.Key)
 }

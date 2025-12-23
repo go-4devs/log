@@ -32,7 +32,7 @@ func WithMessage(msg string) Option {
 	}
 }
 
-func WithMessagef(format string, args ...interface{}) Option {
+func WithMessagef(format string, args ...any) Option {
 	return func(e *Entry) {
 		e.format = format
 		e.args = args
@@ -50,7 +50,7 @@ func New(opts ...Option) *Entry {
 		fields: make(field.Fields, 0, defaultCap+1),
 		level:  level.Debug,
 		format: "",
-		args:   make([]interface{}, 0, defaultCap+1),
+		args:   make([]any, 0, defaultCap+1),
 	}
 
 	for _, opt := range opts {
@@ -63,7 +63,7 @@ func New(opts ...Option) *Entry {
 // Entry slice field.
 type Entry struct {
 	format string
-	args   []interface{}
+	args   []any
 	level  level.Level
 	fields field.Fields
 }
@@ -133,7 +133,7 @@ func (e *Entry) SetMessage(msg string) *Entry {
 	return e
 }
 
-func (e *Entry) SetMessagef(format string, args ...interface{}) *Entry {
+func (e *Entry) SetMessagef(format string, args ...any) *Entry {
 	if e == nil {
 		return New().SetMessagef(format, args...)
 	}
@@ -154,7 +154,7 @@ func (e *Entry) Add(fields ...field.Field) *Entry {
 	return e
 }
 
-func (e *Entry) AddAny(key string, value interface{}) *Entry {
+func (e *Entry) AddAny(key string, value any) *Entry {
 	return e.Add(field.Any(key, value))
 }
 

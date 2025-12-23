@@ -1,4 +1,4 @@
-// nolint: exhaustruct
+//nolint:exhaustruct
 package field
 
 import (
@@ -27,7 +27,7 @@ func StringpValue(value *string) Value {
 	return StringValue(*value)
 }
 
-// StringpValue returns a new Value for a string.
+// StringsValue returns a new Value for a string.
 func StringsValue(value []string) Value {
 	return Value{
 		Kind: KindArray,
@@ -115,7 +115,7 @@ func Uint8sValue(values []uint8) Value {
 	}
 }
 
-// Uint64sValue returns a Value for a []uint64.
+// Uint64pValue returns a Value for a []uint64.
 func Uint64pValue(v *uint64) Value {
 	if v == nil {
 		return NilValue()
@@ -145,7 +145,7 @@ func Int64sValue(value []int64) Value {
 	}
 }
 
-// Int64sValue returns a Value for an *int64.
+// Int64pValue returns a Value for an *int64.
 func Int64pValue(value *int64) Value {
 	if value == nil {
 		return NilValue()
@@ -159,7 +159,7 @@ func Float64Value(v float64) Value {
 	return Value{num: math.Float64bits(v), Kind: KindFloat64}
 }
 
-// Float64Value returns a Value for a floating-points number.
+// Float64sValue returns a Value for a floating-points number.
 func Float64sValue(values []float64) Value {
 	return Value{
 		Kind: KindArray,
@@ -175,7 +175,7 @@ func Float64sValue(values []float64) Value {
 	}
 }
 
-// Float64Value returns a Value for a floating-points number.
+// Float64pValue returns a Value for a floating-points number.
 func Float64pValue(v *float64) Value {
 	if v == nil {
 		return NilValue()
@@ -208,7 +208,7 @@ func Complex128Value(v complex128) Value {
 	}
 }
 
-// Complex128Value returns a Value for a []complex128.
+// Complex128sValue returns a Value for a []complex128.
 func Complex128sValue(values []complex128) Value {
 	return Value{
 		Kind: KindArray,
@@ -224,7 +224,7 @@ func Complex128sValue(values []complex128) Value {
 	}
 }
 
-// Complex128Value returns a Value for a *complex128.
+// Complex128pValue returns a Value for a *complex128.
 func Complex128pValue(v *complex128) Value {
 	if v == nil {
 		return NilValue()
@@ -275,7 +275,7 @@ func DurationValue(v time.Duration) Value {
 	return Value{inum: v.Nanoseconds(), Kind: KindDuration}
 }
 
-// DurationValue returns a Value for a *time.Duration.
+// DurationpValue returns a Value for a *time.Duration.
 func DurationpValue(v *time.Duration) Value {
 	if v == nil {
 		return NilValue()
@@ -284,7 +284,7 @@ func DurationpValue(v *time.Duration) Value {
 	return DurationValue(*v)
 }
 
-// DurationValue returns a Value for a *time.Duration.
+// DurationsValue returns a Value for a *time.Duration.
 func DurationsValue(values []time.Duration) Value {
 	return Value{
 		Kind: KindArray,
@@ -469,42 +469,7 @@ func (v Value) String() string {
 	return string(v.append(buf))
 }
 
-// append appends a text representation of v to dst.
-// v is formatted as with fmt.Sprint.
-//
-//nolint:gomnd,cyclop
-func (v Value) append(dst []byte) []byte {
-	switch v.Kind {
-	case KindString:
-		return append(dst, v.AsString()...)
-	case KindInt64:
-		return strconv.AppendInt(dst, v.inum, 10)
-	case KindUint64:
-		return strconv.AppendUint(dst, v.num, 10)
-	case KindFloat64:
-		return strconv.AppendFloat(dst, v.AsFloat64(), 'g', -1, 64)
-	case KindFloat32:
-		return strconv.AppendFloat(dst, float64(v.AsFloat32()), 'g', -1, 32)
-	case KindBool:
-		return strconv.AppendBool(dst, v.AsBool())
-	case KindDuration:
-		return append(dst, v.AsDuration().String()...)
-	case KindTime:
-		return append(dst, v.AsTime().String()...)
-	case KindError:
-		return append(dst, v.AsError().Error()...)
-	case KindGroup:
-		return fmt.Append(dst, v.AsGroup())
-	case KindClosure:
-		return fmt.Append(dst, v.Resolve())
-	case KindAny:
-		return fmt.Append(dst, v.any)
-	default:
-		return fmt.Appendf(dst, "%+v", v.any)
-	}
-}
-
-// nolint: gocyclo,cyclop
+//nolint:gocyclo,cyclop
 func (v Value) Any() any {
 	switch v.Kind {
 	case KindAny, KindBinary:
@@ -542,7 +507,7 @@ func (v Value) Any() any {
 	return v.any
 }
 
-// nolint: forcetypeassert
+//nolint:forcetypeassert
 func (v Value) AsString() string {
 	if v.Kind != KindString {
 		return ""
@@ -567,6 +532,7 @@ func (v Value) AsUint64() uint64 {
 	return v.num
 }
 
+//nolint:gosec
 func (v Value) AsFloat32() float32 {
 	return math.Float32frombits(uint32(v.num))
 }
@@ -647,5 +613,40 @@ func (v Value) AsArray() Values {
 		return res()
 	default:
 		return nil
+	}
+}
+
+// append appends a text representation of v to dst.
+// v is formatted as with fmt.Sprint.
+//
+//nolint:mnd,cyclop
+func (v Value) append(dst []byte) []byte {
+	switch v.Kind {
+	case KindString:
+		return append(dst, v.AsString()...)
+	case KindInt64:
+		return strconv.AppendInt(dst, v.inum, 10)
+	case KindUint64:
+		return strconv.AppendUint(dst, v.num, 10)
+	case KindFloat64:
+		return strconv.AppendFloat(dst, v.AsFloat64(), 'g', -1, 64)
+	case KindFloat32:
+		return strconv.AppendFloat(dst, float64(v.AsFloat32()), 'g', -1, 32)
+	case KindBool:
+		return strconv.AppendBool(dst, v.AsBool())
+	case KindDuration:
+		return append(dst, v.AsDuration().String()...)
+	case KindTime:
+		return append(dst, v.AsTime().String()...)
+	case KindError:
+		return append(dst, v.AsError().Error()...)
+	case KindGroup:
+		return fmt.Append(dst, v.AsGroup())
+	case KindClosure:
+		return fmt.Append(dst, v.Resolve())
+	case KindAny:
+		return fmt.Append(dst, v.any)
+	default:
+		return fmt.Appendf(dst, "%+v", v.any)
 	}
 }

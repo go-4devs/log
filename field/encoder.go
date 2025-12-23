@@ -1,4 +1,3 @@
-//nolint:gomnd
 package field
 
 import (
@@ -104,46 +103,6 @@ func (b BaseEncoder) AppendDelimiter(dst []byte, deli byte) []byte {
 	return append(dst, deli)
 }
 
-//nolint:gocyclo,cyclop
-func (b BaseEncoder) appendValue(dst []byte, val Value, prefix string, deli byte) []byte {
-	switch val.Kind {
-	case KindGroup:
-		return b.appendGroup(dst, val.AsGroup(), prefix)
-	case KindClosure:
-		return b.appendValue(dst, AnyValue(val.Resolve()), prefix, deli)
-	case KindArray:
-		return b.AppendArray(b.AppendDelimiter(dst, deli), val.AsArray())
-	case KindNil:
-		return b.AppendNull(b.AppendDelimiter(dst, deli))
-	case KindBool:
-		return b.AppendBool(b.AppendDelimiter(dst, deli), val.AsBool())
-	case KindBinary:
-		return b.AppendBytes(b.AppendDelimiter(dst, deli), val.AsBinary())
-	case KindComplex128:
-		return b.AppendComplex(b.AppendDelimiter(dst, deli), val.AsComplex128())
-	case KindInt64:
-		return b.AppendInt(b.AppendDelimiter(dst, deli), val.AsInt64())
-	case KindFloat32:
-		return b.AppendFloat(b.AppendDelimiter(dst, deli), float64(val.AsFloat32()), 32)
-	case KindFloat64:
-		return b.AppendFloat(b.AppendDelimiter(dst, deli), val.AsFloat64(), 64)
-	case KindUint64:
-		return b.AppendUint(b.AppendDelimiter(dst, deli), val.AsUint64())
-	case KindError:
-		return b.AppendString(b.AppendDelimiter(dst, deli), val.AsError().Error())
-	case KindString:
-		return b.AppendString(b.AppendDelimiter(dst, deli), val.AsString())
-	case KindDuration:
-		return b.AppendDuration(b.AppendDelimiter(dst, deli), val.AsDuration())
-	case KindTime:
-		return b.AppendTime(b.AppendDelimiter(dst, deli), val.AsTime())
-	case KindAny:
-		return b.DefaultValue(b.AppendDelimiter(dst, deli), b, val)
-	}
-
-	return b.DefaultValue(b.AppendDelimiter(dst, deli), b, val)
-}
-
 func (b BaseEncoder) AppendDuration(dst []byte, d time.Duration) []byte {
 	return b.AppendString(dst, d.String())
 }
@@ -204,12 +163,6 @@ func (b BaseEncoder) AppendField(dst []byte, field Field) []byte {
 	return b.appendField(dst, field, prefix, b.delimeter)
 }
 
-func (b BaseEncoder) appendField(dst []byte, field Field, prefix string, deli byte) []byte {
-	dst = b.AppendKey(dst, field.Key, prefix)
-
-	return b.appendValue(dst, field.Value, field.Key+".", deli)
-}
-
 func (b BaseEncoder) AppendKey(dst []byte, key string, prefix string) []byte {
 	if prefix != "" {
 		dst = append(dst, prefix...)
@@ -218,6 +171,7 @@ func (b BaseEncoder) AppendKey(dst []byte, key string, prefix string) []byte {
 	return b.AppendString(dst, key)
 }
 
+//nolint:mnd
 func (b BaseEncoder) AppendComplex(dst []byte, c complex128) []byte {
 	cmplx := strconv.FormatComplex(c, 'g', -1, 128)
 
@@ -228,6 +182,7 @@ func (b BaseEncoder) AppendFloat(dst []byte, f float64, bitSize int) []byte {
 	return strconv.AppendFloat(dst, f, 'g', -1, bitSize)
 }
 
+//nolint:mnd
 func (b BaseEncoder) AppendUint(dst []byte, u uint64) []byte {
 	return strconv.AppendUint(dst, u, 10)
 }
@@ -236,6 +191,7 @@ func (b BaseEncoder) AppendNull(dst []byte) []byte {
 	return append(dst, b.nullValue...)
 }
 
+//nolint:mnd
 func (b BaseEncoder) AppendInt(dst []byte, val int64) []byte {
 	return strconv.AppendInt(dst, val, 10)
 }
@@ -249,17 +205,6 @@ func (b BaseEncoder) AppendGroup(dst []byte, fields []Field) []byte {
 	dst = b.appendGroup(dst, fields, "")
 
 	return append(dst, b.group.end)
-}
-
-func (b BaseEncoder) appendGroup(dst []byte, fields []Field, prefix string) []byte {
-	if len(fields) > 0 {
-		dst = b.appendField(dst, fields[0], ".", b.delimeter)
-		for _, field := range fields[1:] {
-			dst = b.appendField(append(dst, b.group.deli), field, prefix, b.delimeter)
-		}
-	}
-
-	return dst
 }
 
 func (b BaseEncoder) AppendArray(dst []byte, in []Value) []byte {
@@ -279,4 +224,61 @@ func (b BaseEncoder) AppendBytes(dst, in []byte) []byte {
 	dst = append(dst, in...)
 
 	return append(dst, '"')
+}
+
+func (b BaseEncoder) appendGroup(dst []byte, fields []Field, prefix string) []byte {
+	if len(fields) > 0 {
+		dst = b.appendField(dst, fields[0], ".", b.delimeter)
+		for _, field := range fields[1:] {
+			dst = b.appendField(append(dst, b.group.deli), field, prefix, b.delimeter)
+		}
+	}
+
+	return dst
+}
+
+func (b BaseEncoder) appendField(dst []byte, field Field, prefix string, deli byte) []byte {
+	dst = b.AppendKey(dst, field.Key, prefix)
+
+	return b.appendValue(dst, field.Value, field.Key+".", deli)
+}
+
+//nolint:mnd,gocyclo,cyclop
+func (b BaseEncoder) appendValue(dst []byte, val Value, prefix string, deli byte) []byte {
+	switch val.Kind {
+	case KindGroup:
+		return b.appendGroup(dst, val.AsGroup(), prefix)
+	case KindClosure:
+		return b.appendValue(dst, AnyValue(val.Resolve()), prefix, deli)
+	case KindArray:
+		return b.AppendArray(b.AppendDelimiter(dst, deli), val.AsArray())
+	case KindNil:
+		return b.AppendNull(b.AppendDelimiter(dst, deli))
+	case KindBool:
+		return b.AppendBool(b.AppendDelimiter(dst, deli), val.AsBool())
+	case KindBinary:
+		return b.AppendBytes(b.AppendDelimiter(dst, deli), val.AsBinary())
+	case KindComplex128:
+		return b.AppendComplex(b.AppendDelimiter(dst, deli), val.AsComplex128())
+	case KindInt64:
+		return b.AppendInt(b.AppendDelimiter(dst, deli), val.AsInt64())
+	case KindFloat32:
+		return b.AppendFloat(b.AppendDelimiter(dst, deli), float64(val.AsFloat32()), 32)
+	case KindFloat64:
+		return b.AppendFloat(b.AppendDelimiter(dst, deli), val.AsFloat64(), 64)
+	case KindUint64:
+		return b.AppendUint(b.AppendDelimiter(dst, deli), val.AsUint64())
+	case KindError:
+		return b.AppendString(b.AppendDelimiter(dst, deli), val.AsError().Error())
+	case KindString:
+		return b.AppendString(b.AppendDelimiter(dst, deli), val.AsString())
+	case KindDuration:
+		return b.AppendDuration(b.AppendDelimiter(dst, deli), val.AsDuration())
+	case KindTime:
+		return b.AppendTime(b.AppendDelimiter(dst, deli), val.AsTime())
+	case KindAny:
+		return b.DefaultValue(b.AppendDelimiter(dst, deli), b, val)
+	}
+
+	return b.DefaultValue(b.AppendDelimiter(dst, deli), b, val)
 }

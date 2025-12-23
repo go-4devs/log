@@ -13,16 +13,16 @@ import (
 
 // Keys for "built-in" attributes.
 const (
-	// TimeKey is the key used by the built-in handlers for the time
+	// KeyTime is the key used by the built-in handlers for the time
 	// when the log method is called. The associated Value is a [time.Time].
 	KeyTime = "time"
-	// LevelKey is the key used by the built-in handlers for the level
+	// KeyLevel is the key used by the built-in handlers for the level
 	// of the log call. The associated value is a [Level].
 	KeyLevel = "level"
-	// MessageKey is the key used by the built-in handlers for the
+	// KeyMessage is the key used by the built-in handlers for the
 	// message of the log call. The associated value is a string.
 	KeyMessage = "msg"
-	// SourceKey is the key used by the built-in handlers for the source file
+	// KeySource is the key used by the built-in handlers for the source file
 	// and line of the log call. The associated value is a string.
 	KeySource = "source"
 	// KeyName logger name.
@@ -104,6 +104,7 @@ func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 
 	return func(w io.Writer, data *entry.Entry) (int, error) {
 		buf := buffer.New()
+
 		defer func() {
 			buf.Free()
 		}()
@@ -139,6 +140,7 @@ func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 func FormatString(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 	return func(w io.Writer, entry *entry.Entry) (int, error) {
 		buf := buffer.New()
+
 		defer func() {
 			buf.Free()
 		}()
@@ -163,6 +165,7 @@ func FormatString(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 func FormatJSON(enc Encoder) func(w io.Writer, entry *entry.Entry) (int, error) {
 	return func(w io.Writer, entry *entry.Entry) (int, error) {
 		buf := buffer.New()
+
 		defer func() {
 			buf.Free()
 		}()

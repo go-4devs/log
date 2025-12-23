@@ -51,7 +51,9 @@ func TestUnmarshalJSON(t *testing.T) {
 	for expect, actuals := range levels {
 		for _, actual := range actuals {
 			var level level.Level
-			if err := level.UnmarshalJSON([]byte(actual)); err != nil {
+
+			err := level.UnmarshalJSON([]byte(actual))
+			if err != nil {
 				t.Errorf("%s got err: %s", level, err)
 
 				continue

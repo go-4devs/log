@@ -1,9 +1,30 @@
-run:
-  timeout: 5m
+version: "2"
+linters:
+  default: all
+  disable:
+    - wsl
+    - noinlineerr
+  settings:
+    depguard:
+      rules:
+        main:
+          allow:
+            - $gostd
+            - gitoa.ru
 
-linters-settings:
+    funcorder:
+      constructor: false
+    recvcheck:
+      disable-builtin: false
+      exclusions:
+        - "*.String"
+        - "*.UnmarshalText" 
+        - "*.UnmarshalJSON"
+        - "*.UnmarshalBinary"
     dupl:
       threshold: 100
+    exhaustive:
+      default-signifies-exhaustive: true
     funlen:
       lines: 100
       statements: 50
@@ -12,65 +33,61 @@ linters-settings:
       min-occurrences: 2
     gocyclo:
       min-complexity: 15
-    govet:
-      check-shadowing: true
     lll:
       line-length: 140
-    fieldalignment:
-      suggest-new: true
     misspell:
-      locale: US  
-    exhaustive:
-      default-signifies-exhaustive: true
+      locale: US
+    tagliatelle:
+      case:
+        rules:
+          avro: snake
+          bson: camel
+          json: snake
+          xml: camel
+          yaml: camel
+        use-field-name: true
     varnamelen:
       min-name-length: 2
       ignore-names:
         - err
-        - n
+        - "n"
         - i
         - w
-    tagliatelle:
-      case:
-        use-field-name: true
-        rules:
-          json: snake
-          yaml: camel
-          xml: camel
-          bson: camel
-          avro: snake
-
-linters:
-    enable-all: true
-    disable:
-    # deprecated
-      - interfacer
-      - structcheck
-      - varcheck
-      - golint
-      - deadcode
-      - scopelint
-      - exhaustivestruct
-      - ifshort
-      - nosnakecase
-      - maligned
-
-      - depguard # need configure
-      - nolintlint # use with space
-
-issues:
-  # Excluding configuration per-path, per-linter, per-text and per-source
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - gomnd
-        - ireturn
-        - exhaustruct
-        - gochecknoglobals
-    - path: _example_test\.go
-      linters:
-        - lll
-        - goerr113
-    - path: example/*
-      linters:
-        - gomnd
-        - lll
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - exhaustruct
+          - gochecknoglobals
+          - ireturn
+          - mnd
+        path: _test\.go
+      - linters:
+          - err113
+          - lll
+        path: _example_test\.go
+      - linters:
+          - lll
+          - mnd
+        path: example/*
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

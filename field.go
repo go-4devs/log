@@ -5,7 +5,7 @@ import (
 )
 
 // Field create field.
-func Field(key string, value interface{}) field.Field {
+func Field(key string, value any) field.Field {
 	return field.Any(key, value)
 }
 

@@ -69,10 +69,10 @@ func getMessage(iter int) string {
 	return _messages[iter%1000]
 }
 
-func fakeFmtArgs() []interface{} {
+func fakeFmtArgs() []any {
 	// Need to keep this a function instead of a package-global var so that we
 	// pay the cast-to-interface{} penalty on each call.
-	return []interface{}{
+	return []any{
 		_tenInts[0],
 		_tenInts,
 		_tenStrings[0],
@@ -101,8 +101,8 @@ func fakeFields() []field.Field {
 	}
 }
 
-func fakeSugarFields() []interface{} {
-	return []interface{}{
+func fakeSugarFields() []any {
+	return []any{
 		"int", _tenInts[0],
 		"ints", _tenInts,
 		"string", _tenStrings[0],

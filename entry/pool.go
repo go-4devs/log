@@ -4,7 +4,7 @@ import "sync"
 
 //nolint:gochecknoglobals
 var pool = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		return New()
 	},
 }

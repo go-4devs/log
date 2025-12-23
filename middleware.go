@@ -62,7 +62,7 @@ func WithLevel(key string, lvl level.Level) Middleware {
 }
 
 // KeyValue add field by const key value.
-func KeyValue(key string, value interface{}) Middleware {
+func KeyValue(key string, value any) Middleware {
 	return func(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
 		return handler(ctx, e.AddAny(key, value))
 	}
@@ -75,7 +75,7 @@ func GoVersion(key string) Middleware {
 	}
 }
 
-// WithContext add field by context key.
+// WithContextValue add field by context key.
 func WithContextValue(keys ...fmt.Stringer) Middleware {
 	return func(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
 		for _, key := range keys {
@@ -93,6 +93,7 @@ func WithName(name string) Middleware {
 }
 
 // WithCaller adds called file.
+//
 // Deprecated: use WithSource.
 func WithCaller(key string, depth int, full bool) Middleware {
 	const offset = 2

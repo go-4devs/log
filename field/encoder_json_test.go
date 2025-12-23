@@ -15,6 +15,7 @@ func TestEncoderJSONAppendField_string(t *testing.T) {
 	encode := field.NewEncoderJSON()
 
 	buf := buffer.New()
+
 	defer func() {
 		buf.Free()
 	}()
