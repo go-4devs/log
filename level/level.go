@@ -75,19 +75,19 @@ func (l *Level) UnmarshalBinary(in []byte) error {
 
 func Parse(lvl string) Level {
 	switch strings.ToLower(lvl) {
-	case "debug", "Debug", "DEBUG":
+	case "debug":
 		return Debug
-	case "info", "Info", "INFO":
+	case "info":
 		return Info
-	case "notice", "Notice", "NOTICE":
+	case "notice":
 		return Notice
-	case "warning", "Warning", "WARNING", "warm", "Warm", "WARN":
+	case "warning", "warn":
 		return Warning
-	case "error", "Error", "ERROR", "err", "Err", "ERR":
+	case "error", "err":
 		return Error
-	case "critical", "Critical", "CRITICAL", "crit", "Crit", "CRIT":
+	case "critical", "crit":
 		return Critical
-	case "alert", "Alert", "ALERT":
+	case "alert":
 		return Alert
 	default:
 		return Emergency
