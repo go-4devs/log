@@ -163,18 +163,7 @@ func (e *Entry) AddString(key, value string) *Entry {
 }
 
 func (e *Entry) Replace(key string, value field.Value) *Entry {
-	has := false
-
-	e.fields.Fields(func(f field.Field) bool {
-		if f.Key == key {
-			f.Value = value
-			has = true
-
-			return false
-		}
-
-		return true
-	})
+	_, has := e.fields.Replace(field.Any(key, value))
 
 	if !has {
 		e.AddAny(key, value)

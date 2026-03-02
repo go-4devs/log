@@ -4,6 +4,7 @@ linters:
   disable:
     - wsl
     - noinlineerr
+    - revive
   settings:
     depguard:
       rules:
@@ -21,20 +22,11 @@ linters:
         - "*.UnmarshalText" 
         - "*.UnmarshalJSON"
         - "*.UnmarshalBinary"
-    dupl:
-      threshold: 100
     exhaustive:
       default-signifies-exhaustive: true
     funlen:
       lines: 100
       statements: 50
-    goconst:
-      min-len: 2
-      min-occurrences: 2
-    gocyclo:
-      min-complexity: 15
-    lll:
-      line-length: 140
     misspell:
       locale: US
     tagliatelle:

@@ -7,7 +7,7 @@ import (
 
 func NewEncoderText(opts ...func(*BaseEncoder)) BaseEncoder {
 	opts = append([]func(*BaseEncoder){
-		WithGropuConfig(0, 0, ' '),
+		WithGroupConfig(0, 0, ' '),
 		WithNullValue("<nil>"),
 		WithDefaultValue(func(dst []byte, enc Encoder, val Value) []byte {
 			switch value := val.Any().(type) {

@@ -32,3 +32,16 @@ func (f Fields) Set(idx int, field Field) {
 func (f Fields) Len() int {
 	return len(f)
 }
+
+func (f Fields) Replace(field Field) (Field, bool) {
+	for idx := range f {
+		if f[idx].Key == field.Key {
+			old := f[idx]
+			f[idx] = field
+
+			return old, true
+		}
+	}
+
+	return Empty(), false
+}

@@ -10,7 +10,7 @@ import (
 	"gitoa.ru/go-4devs/log/level"
 )
 
-// Standard create new standart logrus handler.
+// Standard create new standard logrus handler.
 // Deprecated: delete after 0.7.0
 func Standard() log.Logger {
 	return New(logrus.StandardLogger())

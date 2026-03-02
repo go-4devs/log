@@ -6,6 +6,13 @@ import (
 	"time"
 )
 
+//nolint:gochecknoglobals
+var empty Field
+
+func Empty() Field {
+	return empty
+}
+
 func Any(key string, value any) Field {
 	return Field{
 		Key:   key,
@@ -498,7 +505,7 @@ type Field struct {
 	Value Value
 }
 
-// String implent stringer.
+// String implement stringer.
 func (f Field) String() string {
 	return fmt.Sprintf("%s=%+v", f.Key, f.Value)
 }

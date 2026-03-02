@@ -31,7 +31,14 @@ func WithDelimeter(in byte) func(*BaseEncoder) {
 	}
 }
 
+// WithGropuConfig set group config.
+//
+// Deprecated: use WithGroupConfig.
 func WithGropuConfig(start, end, deli byte) func(*BaseEncoder) {
+	return WithGroupConfig(start, end, deli)
+}
+
+func WithGroupConfig(start, end, deli byte) func(*BaseEncoder) {
 	return func(be *BaseEncoder) {
 		be.group = groupConfig{
 			start: start,
@@ -243,7 +250,7 @@ func (b BaseEncoder) appendField(dst []byte, field Field, prefix string, deli by
 	return b.appendValue(dst, field.Value, field.Key+".", deli)
 }
 
-//nolint:mnd,gocyclo,cyclop
+//nolint:mnd,cyclop
 func (b BaseEncoder) appendValue(dst []byte, val Value, prefix string, deli byte) []byte {
 	switch val.Kind {
 	case KindGroup:
@@ -269,7 +276,12 @@ func (b BaseEncoder) appendValue(dst []byte, val Value, prefix string, deli byte
 	case KindUint64:
 		return b.AppendUint(b.AppendDelimiter(dst, deli), val.AsUint64())
 	case KindError:
-		return b.AppendString(b.AppendDelimiter(dst, deli), val.AsError().Error())
+		var errData string
+		if err := val.AsError(); err != nil {
+			errData = err.Error()
+		}
+
+		return b.AppendString(b.AppendDelimiter(dst, deli), errData)
 	case KindString:
 		return b.AppendString(b.AppendDelimiter(dst, deli), val.AsString())
 	case KindDuration:

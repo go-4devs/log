@@ -63,7 +63,7 @@ type option struct {
 	out    io.Writer
 }
 
-// New creates standart logger.
+// New creates standard logger.
 func New(opts ...func(*option)) Logger {
 	log := option{
 		format: FormatString(field.NewEncoderText()),

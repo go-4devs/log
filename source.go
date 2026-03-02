@@ -11,14 +11,21 @@ import (
 	"gitoa.ru/go-4devs/log/field"
 )
 
+const funcName = "Logger"
+
 func WithSource(items int, trimPath func(string) string) Middleware {
 	const (
-		skip       = 4
-		funcPrefix = "gitoa.ru/go-4devs/log.Logger"
-		skipHelper = "gitoa.ru/go-4devs/log."
+		skip    = 4
+		pkgName = "gitoa.ru/go-4devs/log"
 	)
 
+	return WithCallers(items, skip, pkgName, trimPath)
+}
+
+func WithCallers(items, skip int, logPkg string, trimPath func(string) string) Middleware {
 	items += skip
+	skipHelper := logPkg + "."
+	funcPrefix := skipHelper + funcName
 
 	return func(ctx context.Context, data *entry.Entry, handler Logger) (int, error) {
 		pc := make([]uintptr, items)
@@ -86,7 +93,7 @@ func (l Source) MarshalText() ([]byte, error) {
 }
 
 func (l Source) MarshalJSON() ([]byte, error) {
-	return fmt.Appendf([]byte{}, `{"file":"%s","line":%d,"func":"%s"}`, l.File, l.Line, l.Func), nil
+	return fmt.Appendf([]byte{}, `{"file":%q,"line":%d,"func":"%s"}`, l.File, l.Line, l.Func), nil
 }
 
 func errSourceField(skip, mframe int) field.Field {
