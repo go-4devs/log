@@ -209,7 +209,7 @@ func Noticef(ctx context.Context, format string, args ...any) {
 
 // Infof log by info level by format and arguments.
 func Infof(ctx context.Context, format string, args ...any) {
-	global.Noticef(ctx, format, args...)
+	global.Infof(ctx, format, args...)
 }
 
 // Debugf log by debug level by format and arguments.
