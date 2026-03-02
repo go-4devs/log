@@ -250,7 +250,7 @@ func (b BaseEncoder) appendField(dst []byte, field Field, prefix string, deli by
 	return b.appendValue(dst, field.Value, field.Key+".", deli)
 }
 
-//nolint:mnd,gocyclo,cyclop
+//nolint:mnd,cyclop
 func (b BaseEncoder) appendValue(dst []byte, val Value, prefix string, deli byte) []byte {
 	switch val.Kind {
 	case KindGroup:

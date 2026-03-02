@@ -37,7 +37,7 @@ func (l Kind) MarshalText() ([]byte, error) {
 	return []byte(l.String()), nil
 }
 
-//nolint:gocyclo,cyclop,funlen
+//nolint:cyclop,funlen
 func (l *Kind) UnmarshalText(in []byte) error {
 	switch string(in) {
 	case KindAny.String():

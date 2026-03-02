@@ -469,7 +469,7 @@ func (v Value) String() string {
 	return string(v.append(buf))
 }
 
-//nolint:gocyclo,cyclop
+//nolint:cyclop
 func (v Value) Any() any {
 	switch v.Kind {
 	case KindAny, KindBinary:
