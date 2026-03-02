@@ -86,7 +86,7 @@ func (l Source) MarshalText() ([]byte, error) {
 }
 
 func (l Source) MarshalJSON() ([]byte, error) {
-	return fmt.Appendf([]byte{}, `{"file":"%s","line":%d,"func":"%s"}`, l.File, l.Line, l.Func), nil
+	return fmt.Appendf([]byte{}, `{"file":%q,"line":%d,"func":"%s"}`, l.File, l.Line, l.Func), nil
 }
 
 func errSourceField(skip, mframe int) field.Field {
