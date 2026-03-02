@@ -269,7 +269,12 @@ func (b BaseEncoder) appendValue(dst []byte, val Value, prefix string, deli byte
 	case KindUint64:
 		return b.AppendUint(b.AppendDelimiter(dst, deli), val.AsUint64())
 	case KindError:
-		return b.AppendString(b.AppendDelimiter(dst, deli), val.AsError().Error())
+		var errData string
+		if err := val.AsError(); err != nil {
+			errData = err.Error()
+		}
+
+		return b.AppendString(b.AppendDelimiter(dst, deli), errData)
 	case KindString:
 		return b.AppendString(b.AppendDelimiter(dst, deli), val.AsString())
 	case KindDuration:
