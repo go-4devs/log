@@ -105,42 +105,42 @@ func (l Logger) Panicln(args ...any) {
 
 // EmergKVs sugared log by emergency level and key-values.
 func (l Logger) EmergKVs(ctx context.Context, msg string, args ...any) {
-	writeOutput(l.write(ctx, level.Emergency, msg, l.kv(ctx, args...)...))
+	writeOutput(l.writekvs(ctx, level.Emergency, msg, args))
 }
 
 // AlertKVs sugared log by alert level and key-values.
 func (l Logger) AlertKVs(ctx context.Context, msg string, args ...any) {
-	writeOutput(l.write(ctx, level.Alert, msg, l.kv(ctx, args...)...))
+	writeOutput(l.writekvs(ctx, level.Alert, msg, args))
 }
 
 // CritKVs sugared log by critcal level and key-values.
 func (l Logger) CritKVs(ctx context.Context, msg string, args ...any) {
-	writeOutput(l.write(ctx, level.Critical, msg, l.kv(ctx, args...)...))
+	writeOutput(l.writekvs(ctx, level.Critical, msg, args))
 }
 
 // ErrKVs sugared log by error level and key-values.
 func (l Logger) ErrKVs(ctx context.Context, msg string, args ...any) {
-	writeOutput(l.write(ctx, level.Error, msg, l.kv(ctx, args...)...))
+	writeOutput(l.writekvs(ctx, level.Error, msg, args))
 }
 
 // WarnKVs sugared log by warning level and key-values.
 func (l Logger) WarnKVs(ctx context.Context, msg string, args ...any) {
-	writeOutput(l.write(ctx, level.Warning, msg, l.kv(ctx, args...)...))
+	writeOutput(l.writekvs(ctx, level.Warning, msg, args))
 }
 
 // NoticeKVs sugared log by notice level and key-values.
 func (l Logger) NoticeKVs(ctx context.Context, msg string, args ...any) {
-	writeOutput(l.write(ctx, level.Notice, msg, l.kv(ctx, args...)...))
+	writeOutput(l.writekvs(ctx, level.Notice, msg, args))
 }
 
 // InfoKVs sugared log by info level and key-values.
 func (l Logger) InfoKVs(ctx context.Context, msg string, args ...any) {
-	writeOutput(l.write(ctx, level.Info, msg, l.kv(ctx, args...)...))
+	writeOutput(l.writekvs(ctx, level.Info, msg, args))
 }
 
 // DebugKVs sugared log by debug level and key-values.
 func (l Logger) DebugKVs(ctx context.Context, msg string, args ...any) {
-	writeOutput(l.write(ctx, level.Debug, msg, l.kv(ctx, args...)...))
+	writeOutput(l.writekvs(ctx, level.Debug, msg, args))
 }
 
 // EmergKV log by emergency level and key-values.
@@ -247,38 +247,39 @@ func (l Logger) Writer(ctx context.Context, level level.Level, fields ...field.F
 	}
 }
 
-func (l Logger) kv(_ context.Context, args ...any) field.Fields {
-	kvEntry := entry.Get()
+func (l Logger) writekvs(ctx context.Context, lvl level.Level, mst string, args []any) (int, error) {
+	data := entry.Get()
+	data = data.SetMessage(mst).SetLevel(lvl)
 
 	defer func() {
-		entry.Put(kvEntry)
+		entry.Put(data)
 	}()
 
 	for i := 0; i < len(args); i++ {
 		if f, ok := args[i].(field.Field); ok {
-			kvEntry = kvEntry.Add(f)
+			data = data.Add(f)
 
 			continue
 		}
 
 		if i == len(args)-1 {
-			kvEntry = kvEntry.AddAny(badKey, args[i])
+			data = data.AddAny(badKey, args[i])
 
 			break
 		}
 
 		key, val := args[i], args[i+1]
 		if keyStr, ok := key.(string); ok {
-			kvEntry = kvEntry.AddAny(keyStr, val)
+			data = data.AddAny(keyStr, val)
 			i++
 
 			continue
 		}
 
-		kvEntry = kvEntry.AddAny(badKey, args[i])
+		data = data.AddAny(badKey, args[i])
 	}
 
-	return kvEntry.Fields()
+	return l(ctx, data)
 }
 
 func (l Logger) write(ctx context.Context, level level.Level, msg string, fields ...field.Field) (int, error) {
