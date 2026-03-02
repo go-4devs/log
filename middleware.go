@@ -17,7 +17,9 @@ type Middleware func(ctx context.Context, e *entry.Entry, handler Logger) (int, 
 
 // With add middleware to logger.
 func With(logger Logger, mw ...Middleware) Logger {
-	switch len(mw) {
+	num := len(mw)
+
+	switch num {
 	case 0:
 		return logger
 	case 1:
@@ -26,27 +28,17 @@ func With(logger Logger, mw ...Middleware) Logger {
 		}
 	}
 
-	lastI := len(mw) - 1
-
 	return func(ctx context.Context, data *entry.Entry) (int, error) {
-		var (
-			chainHandler func(context.Context, *entry.Entry) (int, error)
-			curI         int
-		)
+		currHandler := logger
 
-		chainHandler = func(currentCtx context.Context, currentEntry *entry.Entry) (int, error) {
-			if curI == lastI {
-				return logger(currentCtx, currentEntry)
+		for i := num - 1; i > 0; i-- {
+			innerHandler := currHandler
+			currHandler = func(currentCtx context.Context, currentEntry *entry.Entry) (int, error) {
+				return mw[i](currentCtx, currentEntry, innerHandler)
 			}
-
-			curI++
-			n, err := mw[curI](currentCtx, currentEntry, chainHandler)
-			curI--
-
-			return n, err
 		}
 
-		return mw[0](ctx, data, chainHandler)
+		return mw[0](ctx, data, currHandler)
 	}
 }
 
