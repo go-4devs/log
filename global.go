@@ -107,7 +107,7 @@ func AlertKVs(ctx context.Context, msg string, args ...any) {
 	global.AlertKVs(ctx, msg, args...)
 }
 
-// CritKVs sugared log by critcal level and key-values.
+// CritKVs sugared log by critical level and key-values.
 func CritKVs(ctx context.Context, msg string, args ...any) {
 	global.CritKVs(ctx, msg, args...)
 }
@@ -147,7 +147,7 @@ func AlertKV(ctx context.Context, msg string, args ...field.Field) {
 	global.AlertKV(ctx, msg, args...)
 }
 
-// CritKV log by critcal level and key-values.
+// CritKV log by critical level and key-values.
 func CritKV(ctx context.Context, msg string, args ...field.Field) {
 	global.CritKV(ctx, msg, args...)
 }

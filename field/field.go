@@ -505,7 +505,7 @@ type Field struct {
 	Value Value
 }
 
-// String implent stringer.
+// String implement stringer.
 func (f Field) String() string {
 	return fmt.Sprintf("%s=%+v", f.Key, f.Value)
 }

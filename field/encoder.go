@@ -31,7 +31,7 @@ func WithDelimeter(in byte) func(*BaseEncoder) {
 	}
 }
 
-func WithGropuConfig(start, end, deli byte) func(*BaseEncoder) {
+func WithGroupConfig(start, end, deli byte) func(*BaseEncoder) {
 	return func(be *BaseEncoder) {
 		be.group = groupConfig{
 			start: start,

@@ -113,7 +113,7 @@ func (l Logger) AlertKVs(ctx context.Context, msg string, args ...any) {
 	writeOutput(l.writekvs(ctx, level.Alert, msg, args))
 }
 
-// CritKVs sugared log by critcal level and key-values.
+// CritKVs sugared log by critical level and key-values.
 func (l Logger) CritKVs(ctx context.Context, msg string, args ...any) {
 	writeOutput(l.writekvs(ctx, level.Critical, msg, args))
 }
@@ -153,7 +153,7 @@ func (l Logger) AlertKV(ctx context.Context, msg string, args ...field.Field) {
 	writeOutput(l.write(ctx, level.Alert, msg, args...))
 }
 
-// CritKV log by critcal level and key-values.
+// CritKV log by critical level and key-values.
 func (l Logger) CritKV(ctx context.Context, msg string, args ...field.Field) {
 	writeOutput(l.write(ctx, level.Critical, msg, args...))
 }

@@ -2,4 +2,4 @@ package field
 
 import "errors"
 
-var ErrUndefined = errors.New("indefined")
+var ErrUndefined = errors.New("undefined")
