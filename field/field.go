@@ -6,6 +6,13 @@ import (
 	"time"
 )
 
+//nolint:gochecknoglobals
+var empty Field
+
+func Empty() Field {
+	return empty
+}
+
 func Any(key string, value any) Field {
 	return Field{
 		Key:   key,
