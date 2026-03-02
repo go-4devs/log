@@ -31,6 +31,13 @@ func WithDelimeter(in byte) func(*BaseEncoder) {
 	}
 }
 
+// WithGropuConfig set group config.
+//
+// Deprecated: use WithGroupConfig.
+func WithGropuConfig(start, end, deli byte) func(*BaseEncoder) {
+	return WithGroupConfig(start, end, deli)
+}
+
 func WithGroupConfig(start, end, deli byte) func(*BaseEncoder) {
 	return func(be *BaseEncoder) {
 		be.group = groupConfig{
