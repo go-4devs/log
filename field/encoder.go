@@ -127,37 +127,6 @@ func AppendString(dst []byte, in string) []byte {
 	return append(dst, in...)
 }
 
-//nolint:cyclop
-func needsQuoting(in string) bool {
-	if len(in) == 0 {
-		return true
-	}
-
-	for i := 0; i < len(in); {
-		char := in[i]
-		if char < utf8.RuneSelf {
-			// Quote anything except a backslash that would need quoting in a
-			// JSON string, as well as space and '='
-			if char != '\\' && (char == ' ' || char == '=' || !safeSet[char]) {
-				return true
-			}
-
-			i++
-
-			continue
-		}
-
-		decodeRune, size := utf8.DecodeRuneInString(in[i:])
-		if decodeRune == utf8.RuneError || unicode.IsSpace(decodeRune) || !unicode.IsPrint(decodeRune) {
-			return true
-		}
-
-		i += size
-	}
-
-	return false
-}
-
 func (b BaseEncoder) AppendField(dst []byte, field Field) []byte {
 	prefix := ""
 
@@ -295,4 +264,35 @@ func (b BaseEncoder) appendValue(dst []byte, val Value, prefix string, deli byte
 	}
 
 	return b.DefaultValue(b.AppendDelimiter(dst, deli), b, val)
+}
+
+//nolint:cyclop
+func needsQuoting(in string) bool {
+	if len(in) == 0 {
+		return true
+	}
+
+	for i := 0; i < len(in); {
+		char := in[i]
+		if char < utf8.RuneSelf {
+			// Quote anything except a backslash that would need quoting in a
+			// JSON string, as well as space and '='
+			if char != '\\' && (char == ' ' || char == '=' || !safeSet[char]) {
+				return true
+			}
+
+			i++
+
+			continue
+		}
+
+		decodeRune, size := utf8.DecodeRuneInString(in[i:])
+		if decodeRune == utf8.RuneError || unicode.IsSpace(decodeRune) || !unicode.IsPrint(decodeRune) {
+			return true
+		}
+
+		i += size
+	}
+
+	return false
 }

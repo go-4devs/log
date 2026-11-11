@@ -1,4 +1,3 @@
-//nolint:exhaustruct_v5
 package field
 
 import (
@@ -11,11 +10,7 @@ import (
 
 // StringValue returns a new Value for a string.
 func StringValue(value string) Value {
-	return Value{
-		num:  uint64(len(value)),
-		any:  stringptr(unsafe.StringData(value)),
-		Kind: KindString,
-	}
+	return newValue(KindString, uint64(len(value)), 0, stringptr(unsafe.StringData(value)))
 }
 
 // StringpValue returns a new Value for a *string.
@@ -29,18 +24,14 @@ func StringpValue(value *string) Value {
 
 // StringsValue returns a new Value for a string.
 func StringsValue(value []string) Value {
-	return Value{
-		Kind: KindArray,
-		num:  uint64(len(value)),
-		any: func() []Value {
-			values := make([]Value, len(value))
-			for idx := range value {
-				values[idx] = StringValue(value[idx])
-			}
+	return newValue(KindArray, uint64(len(value)), 0, func() []Value {
+		values := make([]Value, len(value))
+		for idx := range value {
+			values[idx] = StringValue(value[idx])
+		}
 
-			return values
-		},
-	}
+		return values
+	})
 }
 
 // BoolValue returns a Value for a bool.
@@ -50,23 +41,19 @@ func BoolValue(v bool) Value {
 		u = 1
 	}
 
-	return Value{num: u, Kind: KindBool}
+	return newValue(KindBool, u, 0, nil)
 }
 
 // BoolsValue returns a Value for a []bool.
 func BoolsValue(values []bool) Value {
-	return Value{
-		Kind: KindArray,
-		num:  uint64(len(values)),
-		any: func() []Value {
-			vals := make([]Value, len(values))
-			for idx := range values {
-				vals[idx] = BoolValue(values[idx])
-			}
+	return newValue(KindArray, uint64(len(values)), 0, func() []Value {
+		vals := make([]Value, len(values))
+		for idx := range values {
+			vals[idx] = BoolValue(values[idx])
+		}
 
-			return vals
-		},
-	}
+		return vals
+	})
 }
 
 // BoolpValue returns a new Value for a *bool.
@@ -80,39 +67,31 @@ func BoolpValue(value *bool) Value {
 
 // Uint64Value returns a Value for a uint64.
 func Uint64Value(v uint64) Value {
-	return Value{num: v, Kind: KindUint64}
+	return newValue(KindUint64, v, 0, nil)
 }
 
 // Uint64sValue returns a Value for a []uint64.
 func Uint64sValue(values []uint64) Value {
-	return Value{
-		Kind: KindArray,
-		num:  uint64(len(values)),
-		any: func() []Value {
-			vals := make([]Value, len(values))
-			for idx := range values {
-				vals[idx] = Uint64Value(values[idx])
-			}
+	return newValue(KindArray, uint64(len(values)), 0, func() []Value {
+		vals := make([]Value, len(values))
+		for idx := range values {
+			vals[idx] = Uint64Value(values[idx])
+		}
 
-			return vals
-		},
-	}
+		return vals
+	})
 }
 
 // Uint8sValue returns a Value for a []uint8.
 func Uint8sValue(values []uint8) Value {
-	return Value{
-		Kind: KindArray,
-		num:  uint64(len(values)),
-		any: func() []Value {
-			vals := make([]Value, len(values))
-			for idx := range values {
-				vals[idx] = Uint64Value(uint64(values[idx]))
-			}
+	return newValue(KindArray, uint64(len(values)), 0, func() []Value {
+		vals := make([]Value, len(values))
+		for idx := range values {
+			vals[idx] = Uint64Value(uint64(values[idx]))
+		}
 
-			return vals
-		},
-	}
+		return vals
+	})
 }
 
 // Uint64pValue returns a Value for a []uint64.
@@ -126,23 +105,19 @@ func Uint64pValue(v *uint64) Value {
 
 // Int64Value returns a Value for an int64.
 func Int64Value(value int64) Value {
-	return Value{inum: value, Kind: KindInt64}
+	return newValue(KindInt64, 0, value, nil)
 }
 
 // Int64sValue returns a Value for an []int64.
 func Int64sValue(value []int64) Value {
-	return Value{
-		Kind: KindArray,
-		num:  uint64(len(value)),
-		any: func() []Value {
-			vals := make([]Value, len(value))
-			for idx := range value {
-				vals[idx] = Int64Value(value[idx])
-			}
+	return newValue(KindArray, uint64(len(value)), 0, func() []Value {
+		vals := make([]Value, len(value))
+		for idx := range value {
+			vals[idx] = Int64Value(value[idx])
+		}
 
-			return vals
-		},
-	}
+		return vals
+	})
 }
 
 // Int64pValue returns a Value for an *int64.
@@ -156,23 +131,19 @@ func Int64pValue(value *int64) Value {
 
 // Float64Value returns a Value for a floating-point number.
 func Float64Value(v float64) Value {
-	return Value{num: math.Float64bits(v), Kind: KindFloat64}
+	return newValue(KindFloat64, math.Float64bits(v), 0, nil)
 }
 
 // Float64sValue returns a Value for a floating-points number.
 func Float64sValue(values []float64) Value {
-	return Value{
-		Kind: KindArray,
-		num:  uint64(len(values)),
-		any: func() []Value {
-			vals := make([]Value, len(values))
-			for idx := range values {
-				vals[idx] = Float64Value(values[idx])
-			}
+	return newValue(KindArray, uint64(len(values)), 0, func() []Value {
+		vals := make([]Value, len(values))
+		for idx := range values {
+			vals[idx] = Float64Value(values[idx])
+		}
 
-			return vals
-		},
-	}
+		return vals
+	})
 }
 
 // Float64pValue returns a Value for a floating-points number.
@@ -186,42 +157,31 @@ func Float64pValue(v *float64) Value {
 
 // Complex64sValue returns a Value for a []complex64.
 func Complex64sValue(values []complex64) Value {
-	return Value{
-		Kind: KindArray,
-		num:  uint64(len(values)),
-		any: func() []Value {
-			vals := make([]Value, len(values))
-			for idx := range values {
-				vals[idx] = Complex128Value(complex128(values[idx]))
-			}
+	return newValue(KindArray, uint64(len(values)), 0, func() []Value {
+		vals := make([]Value, len(values))
+		for idx := range values {
+			vals[idx] = Complex128Value(complex128(values[idx]))
+		}
 
-			return vals
-		},
-	}
+		return vals
+	})
 }
 
 // Complex128Value returns a Value for a complex128.
 func Complex128Value(v complex128) Value {
-	return Value{
-		Kind: KindComplex128,
-		any:  v,
-	}
+	return newValue(KindComplex128, 0, 0, v)
 }
 
 // Complex128sValue returns a Value for a []complex128.
 func Complex128sValue(values []complex128) Value {
-	return Value{
-		Kind: KindArray,
-		num:  uint64(len(values)),
-		any: func() []Value {
-			vals := make([]Value, len(values))
-			for idx := range values {
-				vals[idx] = Complex128Value(values[idx])
-			}
+	return newValue(KindArray, uint64(len(values)), 0, func() []Value {
+		vals := make([]Value, len(values))
+		for idx := range values {
+			vals[idx] = Complex128Value(values[idx])
+		}
 
-			return vals
-		},
-	}
+		return vals
+	})
 }
 
 // Complex128pValue returns a Value for a *complex128.
@@ -235,7 +195,7 @@ func Complex128pValue(v *complex128) Value {
 
 // TimeValue returns a Value for a time.Time.
 func TimeValue(v time.Time) Value {
-	return Value{inum: v.UnixNano(), any: v.Location(), Kind: KindTime}
+	return newValue(KindTime, 0, v.UnixNano(), v.Location())
 }
 
 // TimepValue returns a Value for a *time.Time.
@@ -249,30 +209,23 @@ func TimepValue(v *time.Time) Value {
 
 // TimesValue returns a Value for a []time.Time.
 func TimesValue(values []time.Time) Value {
-	return Value{
-		Kind: KindArray,
-		num:  uint64(len(values)),
-		any: func() []Value {
-			vals := make([]Value, len(values))
-			for idx := range values {
-				vals[idx] = TimeValue(values[idx])
-			}
+	return newValue(KindArray, uint64(len(values)), 0, func() []Value {
+		vals := make([]Value, len(values))
+		for idx := range values {
+			vals[idx] = TimeValue(values[idx])
+		}
 
-			return vals
-		},
-	}
+		return vals
+	})
 }
 
 func ClosureValue(fn ClosureFn) Value {
-	return Value{
-		Kind: KindClosure,
-		any:  fn,
-	}
+	return newValue(KindClosure, 0, 0, fn)
 }
 
 // DurationValue returns a Value for a time.Duration.
 func DurationValue(v time.Duration) Value {
-	return Value{inum: v.Nanoseconds(), Kind: KindDuration}
+	return newValue(KindDuration, 0, v.Nanoseconds(), nil)
 }
 
 // DurationpValue returns a Value for a *time.Duration.
@@ -286,62 +239,42 @@ func DurationpValue(v *time.Duration) Value {
 
 // DurationsValue returns a Value for a *time.Duration.
 func DurationsValue(values []time.Duration) Value {
-	return Value{
-		Kind: KindArray,
-		num:  uint64(len(values)),
-		any: func() []Value {
-			vals := make([]Value, len(values))
-			for idx := range values {
-				vals[idx] = DurationValue(values[idx])
-			}
+	return newValue(KindArray, uint64(len(values)), 0, func() []Value {
+		vals := make([]Value, len(values))
+		for idx := range values {
+			vals[idx] = DurationValue(values[idx])
+		}
 
-			return vals
-		},
-	}
+		return vals
+	})
 }
 
 // GroupValue returns a new Value for a list of Fields.
 func GroupValue(as ...Field) Value {
-	return Value{
-		num:  uint64(len(as)),
-		any:  groupptr(unsafe.SliceData(as)),
-		Kind: KindGroup,
-	}
+	return newValue(KindGroup, uint64(len(as)), 0, groupptr(unsafe.SliceData(as)))
 }
 
 func ErrorValue(value error) Value {
-	return Value{
-		Kind: KindError,
-		any:  value,
-	}
+	return newValue(KindError, 0, 0, value)
 }
 
 func ErrorsValue(value []error) Value {
-	return Value{
-		Kind: KindArray,
-		num:  uint64(len(value)),
-		any: func() []Value {
-			vals := make([]Value, len(value))
-			for idx := range value {
-				vals[idx] = ErrorValue(value[idx])
-			}
+	return newValue(KindArray, uint64(len(value)), 0, func() []Value {
+		vals := make([]Value, len(value))
+		for idx := range value {
+			vals[idx] = ErrorValue(value[idx])
+		}
 
-			return vals
-		},
-	}
+		return vals
+	})
 }
 
 func BytesValue(value []byte) Value {
-	return Value{
-		Kind: KindBinary,
-		any:  value,
-	}
+	return newValue(KindBinary, 0, 0, value)
 }
 
 //nolint:gochecknoglobals
-var nilValue = Value{
-	Kind: KindNil,
-}
+var nilValue = newValue(KindNil, 0, 0, nil)
 
 func NilValue() Value {
 	return nilValue
@@ -433,7 +366,7 @@ func AnyValue(v any) Value {
 	case Fields:
 		return GroupValue(value...)
 	case Kind:
-		return Value{Kind: value}
+		return newValue(value, 0, 0, nil)
 	case func() any:
 		return ClosureValue(value)
 	case ClosureFn:
@@ -443,7 +376,7 @@ func AnyValue(v any) Value {
 	case Value:
 		return value
 	default:
-		return Value{any: value}
+		return newValue(KindAny, 0, 0, value)
 	}
 }
 
@@ -653,4 +586,15 @@ func (v Value) append(dst []byte) []byte {
 	default:
 		return fmt.Appendf(dst, "%+v", v.any)
 	}
+}
+
+func newValue(kind Kind, num uint64, inum int64, data any) Value {
+	var val Value
+
+	val.Kind = kind
+	val.num = num
+	val.inum = inum
+	val.any = data
+
+	return val
 }

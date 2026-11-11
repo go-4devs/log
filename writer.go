@@ -100,27 +100,6 @@ type bracketHead struct {
 	rest        []field.Field
 }
 
-func bracketHeadFrom(fields field.Fields) bracketHead {
-	var head bracketHead
-
-	fields.Fields(func(item field.Field) bool {
-		switch {
-		case !head.hasTime && item.IsKey(KeyTime):
-			head.timeField, head.hasTime = item, true
-		case !head.hasName && item.IsKey(KeyName):
-			head.nameField, head.hasName = item, true
-		case !head.hasSource && item.IsKey(KeySource):
-			head.sourceField, head.hasSource = item, true
-		case !item.IsKey(KeyTime, KeySource, KeyName, KeyLevel):
-			head.rest = append(head.rest, item)
-		}
-
-		return true
-	})
-
-	return head
-}
-
 func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 	return func(w io.Writer, data *entry.Entry) (int, error) {
 		if data == nil {
@@ -231,4 +210,25 @@ func FormatJSON(enc Encoder) func(w io.Writer, entry *entry.Entry) (int, error) 
 
 		return n, nil
 	}
+}
+
+func bracketHeadFrom(fields field.Fields) bracketHead {
+	var head bracketHead
+
+	fields.Fields(func(item field.Field) bool {
+		switch {
+		case !head.hasTime && item.IsKey(KeyTime):
+			head.timeField, head.hasTime = item, true
+		case !head.hasName && item.IsKey(KeyName):
+			head.nameField, head.hasName = item, true
+		case !head.hasSource && item.IsKey(KeySource):
+			head.sourceField, head.hasSource = item, true
+		case !item.IsKey(KeyTime, KeySource, KeyName, KeyLevel):
+			head.rest = append(head.rest, item)
+		}
+
+		return true
+	})
+
+	return head
 }

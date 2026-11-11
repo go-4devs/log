@@ -15,15 +15,6 @@ var _ io.Writer = Logger(nil)
 
 const badKey = "!BADKEY"
 
-//nolint:gochecknoglobals // tests swap this so Fatal does not stop the test process
-var exit = os.Exit
-
-func writeOutput(_ int, err error) {
-	if err != nil {
-		fmt.Fprint(os.Stderr, err)
-	}
-}
-
 // Logger logged message.
 type Logger func(ctx context.Context, entry *entry.Entry) (int, error)
 
@@ -84,7 +75,7 @@ func (l Logger) Print(args ...any) {
 // Fatal logs at alert level, then exits.
 func (l Logger) Fatal(args ...any) {
 	writeOutput(l.writef(context.Background(), level.Alert, "", args...))
-	exit(1)
+	os.Exit(1)
 }
 
 // Panic logs at emergency level, then panics.
@@ -101,7 +92,7 @@ func (l Logger) Println(args ...any) {
 // Fatalln logs at alert level, then exits.
 func (l Logger) Fatalln(args ...any) {
 	writeOutput(l.write(context.Background(), level.Alert, fmt.Sprintln(args...)))
-	exit(1)
+	os.Exit(1)
 }
 
 // Panicln logs at emergency level, then panics.
@@ -238,7 +229,7 @@ func (l Logger) Printf(format string, args ...any) {
 // Fatalf logs at alert level, then exits.
 func (l Logger) Fatalf(format string, args ...any) {
 	writeOutput(l.writef(context.Background(), level.Alert, format, args...))
-	exit(1)
+	os.Exit(1)
 }
 
 // Panicf logs at emergency level, then panics.
@@ -253,6 +244,52 @@ func (l Logger) Writer(ctx context.Context, level level.Level, fields ...field.F
 		level:  level,
 		Logger: l,
 		fields: fields,
+	}
+}
+
+//nolint:containedctx
+type writer struct {
+	Logger
+
+	ctx    context.Context
+	level  level.Level
+	fields []field.Field
+}
+
+func (w writer) WithLevel(level level.Level) writer {
+	return writer{
+		level:  level,
+		Logger: w.Logger,
+		ctx:    w.ctx,
+		fields: w.fields,
+	}
+}
+
+func (w writer) WithContext(ctx context.Context) writer {
+	return writer{
+		level:  w.level,
+		Logger: w.Logger,
+		ctx:    ctx,
+		fields: w.fields,
+	}
+}
+
+func (w writer) WithFields(fields ...field.Field) writer {
+	return writer{
+		level:  w.level,
+		Logger: w.Logger,
+		ctx:    w.ctx,
+		fields: fields,
+	}
+}
+
+func (w writer) Write(in []byte) (int, error) {
+	return w.write(w.ctx, w.level, string(in), w.fields...)
+}
+
+func writeOutput(_ int, err error) {
+	if err != nil {
+		fmt.Fprint(os.Stderr, err)
 	}
 }
 
@@ -309,44 +346,4 @@ func (l Logger) writef(ctx context.Context, level level.Level, format string, ar
 	}()
 
 	return l(ctx, data.SetLevel(level).SetMessagef(format, args...))
-}
-
-//nolint:containedctx
-type writer struct {
-	Logger
-
-	ctx    context.Context
-	level  level.Level
-	fields []field.Field
-}
-
-func (w writer) WithLevel(level level.Level) writer {
-	return writer{
-		level:  level,
-		Logger: w.Logger,
-		ctx:    w.ctx,
-		fields: w.fields,
-	}
-}
-
-func (w writer) WithContext(ctx context.Context) writer {
-	return writer{
-		level:  w.level,
-		Logger: w.Logger,
-		ctx:    ctx,
-		fields: w.fields,
-	}
-}
-
-func (w writer) WithFields(fields ...field.Field) writer {
-	return writer{
-		level:  w.level,
-		Logger: w.Logger,
-		ctx:    w.ctx,
-		fields: fields,
-	}
-}
-
-func (w writer) Write(in []byte) (int, error) {
-	return w.write(w.ctx, w.level, string(in), w.fields...)
 }

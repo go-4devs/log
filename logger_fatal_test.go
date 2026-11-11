@@ -1,15 +1,21 @@
-package log //nolint:testpackage // replaces unexported exit
+package log_test
 
 import (
 	"bytes"
+	"context"
+	"errors"
+	"os"
+	"os/exec"
 	"testing"
+
+	"github.com/go-4devs/log"
 )
 
-func TestPanicAndFatal(t *testing.T) {
+func TestPanicWritesThenPanics(t *testing.T) {
 	t.Parallel()
 
 	buf := &bytes.Buffer{}
-	logger := New(WithWriter(buf))
+	logger := log.New(log.WithWriter(buf))
 
 	func() {
 		defer func() {
@@ -24,17 +30,34 @@ func TestPanicAndFatal(t *testing.T) {
 	if !bytes.Contains(buf.Bytes(), []byte("boom")) {
 		t.Fatalf("panic wrote %q", buf)
 	}
+}
 
-	code := -1
-	prev := exit
-	exit = func(c int) { code = c }
+func TestFatalWritesThenExits(t *testing.T) {
+	t.Parallel()
 
-	t.Cleanup(func() { exit = prev })
+	if os.Getenv("LOG_FATAL") == "1" {
+		log.New(log.WithWriter(os.Stdout)).Fatal("down")
 
-	buf.Reset()
-	logger.Fatal("down")
+		return
+	}
 
-	if code != 1 || !bytes.Contains(buf.Bytes(), []byte("down")) {
-		t.Fatalf("code %d buf %q", code, buf)
+	//nolint:gosec // re-exec this test binary
+	cmd := exec.CommandContext(context.Background(), os.Args[0], "-test.run=^TestFatalWritesThenExits$")
+
+	cmd.Env = append(os.Environ(), "LOG_FATAL=1")
+
+	var out bytes.Buffer
+
+	cmd.Stdout = &out
+
+	err := cmd.Run()
+
+	var exitErr *exec.ExitError
+	if !errors.As(err, &exitErr) || exitErr.ExitCode() != 1 {
+		t.Fatalf("exit: %v", err)
+	}
+
+	if !bytes.Contains(out.Bytes(), []byte("down")) {
+		t.Fatalf("fatal wrote %q", out.Bytes())
 	}
 }
