@@ -1,9 +1,9 @@
-module gitoa.ru/go-4devs/log/handler/otel
+module github.com/go-4devs/log/handler/otel
 
-go 1.21.5
+go 1.22
 
 require (
-	gitoa.ru/go-4devs/log v0.5.1
+	github.com/go-4devs/log v0.6.0
 	go.opentelemetry.io/otel v1.21.0
 	go.opentelemetry.io/otel/sdk v1.21.0
 	go.opentelemetry.io/otel/trace v1.21.0

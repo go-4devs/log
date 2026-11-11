@@ -3,11 +3,11 @@ package logrus
 import (
 	"context"
 
+	"github.com/go-4devs/log"
+	"github.com/go-4devs/log/entry"
+	"github.com/go-4devs/log/field"
+	"github.com/go-4devs/log/level"
 	"github.com/sirupsen/logrus"
-	"gitoa.ru/go-4devs/log"
-	"gitoa.ru/go-4devs/log/entry"
-	"gitoa.ru/go-4devs/log/field"
-	"gitoa.ru/go-4devs/log/level"
 )
 
 // Standard create new standard logrus handler.

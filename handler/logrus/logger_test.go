@@ -6,10 +6,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/go-4devs/log/entry"
+	"github.com/go-4devs/log/handler/logrus"
+	"github.com/go-4devs/log/level"
 	lgr "github.com/sirupsen/logrus"
-	"gitoa.ru/go-4devs/log/entry"
-	"gitoa.ru/go-4devs/log/handler/logrus"
-	"gitoa.ru/go-4devs/log/level"
 )
 
 func TestNew(t *testing.T) {

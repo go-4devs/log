@@ -5,10 +5,10 @@ import (
 	"context"
 	"testing"
 
-	"gitoa.ru/go-4devs/log/entry"
-	"gitoa.ru/go-4devs/log/field"
-	zlog "gitoa.ru/go-4devs/log/handler/zap"
-	"gitoa.ru/go-4devs/log/level"
+	"github.com/go-4devs/log/entry"
+	"github.com/go-4devs/log/field"
+	zlog "github.com/go-4devs/log/handler/zap"
+	"github.com/go-4devs/log/level"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

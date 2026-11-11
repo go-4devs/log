@@ -5,9 +5,9 @@ import (
 	"io"
 	"os"
 
+	"github.com/go-4devs/log/field"
+	"github.com/go-4devs/log/handler/logrus"
 	slogrus "github.com/sirupsen/logrus"
-	"gitoa.ru/go-4devs/log/field"
-	"gitoa.ru/go-4devs/log/handler/logrus"
 )
 
 func ExampleNew_logrusHandler() {

@@ -3,8 +3,8 @@ package otel
 import (
 	"context"
 
-	"gitoa.ru/go-4devs/log"
-	"gitoa.ru/go-4devs/log/entry"
+	"github.com/go-4devs/log"
+	"github.com/go-4devs/log/entry"
 )
 
 // Deprecated: delete after 0.7.0

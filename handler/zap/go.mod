@@ -1,9 +1,9 @@
-module gitoa.ru/go-4devs/log/handler/zap
+module github.com/go-4devs/log/handler/zap
 
-go 1.21.5
+go 1.22
 
 require (
-	gitoa.ru/go-4devs/log v0.5.1
+	github.com/go-4devs/log v0.6.0
 	go.uber.org/zap v1.26.0
 )
 

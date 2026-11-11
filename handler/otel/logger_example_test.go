@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io"
 
-	"gitoa.ru/go-4devs/log"
-	"gitoa.ru/go-4devs/log/field"
-	"gitoa.ru/go-4devs/log/handler/otel"
+	"github.com/go-4devs/log"
+	"github.com/go-4devs/log/field"
+	"github.com/go-4devs/log/handler/otel"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
 )

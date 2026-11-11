@@ -4,8 +4,8 @@ import (
 	"context"
 	"io"
 
-	"gitoa.ru/go-4devs/log/field"
-	"gitoa.ru/go-4devs/log/handler/zap"
+	"github.com/go-4devs/log/field"
+	"github.com/go-4devs/log/handler/zap"
 	uzap "go.uber.org/zap"
 )
 
