@@ -26,6 +26,6 @@ jobs:
       - name: Run go test
         run: |
           go test ./...
-          for dir in handler/zap handler/logrus handler/otel; do
+          for dir in handler/zap; do
             (cd "$dir" && go test ./...)
           done

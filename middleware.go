@@ -88,17 +88,6 @@ func WithName(name string) Middleware {
 	}
 }
 
-// WithCaller adds called file.
-//
-// Deprecated: use WithSource.
-func WithCaller(key string, depth int, full bool) Middleware {
-	const offset = 2
-
-	return func(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
-		return handler(ctx, e.AddString(key, entry.Caller(depth*offset, full)))
-	}
-}
-
 // WithTime adds time.
 func WithTime(key, format string) Middleware {
 	return func(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {

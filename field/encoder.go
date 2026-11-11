@@ -44,13 +44,6 @@ func WithDelimeter(in byte) func(*BaseEncoder) {
 	}
 }
 
-// WithGropuConfig sets the group delimiters.
-//
-// Deprecated: use WithGroupConfig.
-func WithGropuConfig(start, end, deli byte) func(*BaseEncoder) {
-	return WithGroupConfig(start, end, deli)
-}
-
 // WithGroupConfig sets the group start, end, and separator bytes.
 func WithGroupConfig(start, end, deli byte) func(*BaseEncoder) {
 	return func(be *BaseEncoder) {
