@@ -127,15 +127,11 @@ func TestNewConcurrentWrite(t *testing.T) {
 
 	var wg sync.WaitGroup
 	for range 8 {
-		wg.Add(1)
-
-		go func() {
-			defer wg.Done()
-
+		wg.Go(func() {
 			for range 40 {
 				logger.Info(context.Background(), "x")
 			}
-		}()
+		})
 	}
 
 	wg.Wait()
