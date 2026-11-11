@@ -18,12 +18,7 @@ var bufPool = sync.Pool{
 }
 
 func New() *Buffer {
-	buf, ok := bufPool.Get().(*Buffer)
-	if !ok {
-		b := make([]byte, 0, bufferSize)
-
-		return (*Buffer)(&b)
-	}
+	buf, _ := bufPool.Get().(*Buffer)
 
 	return buf
 }

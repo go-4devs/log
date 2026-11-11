@@ -28,7 +28,7 @@ func TestEntry_Replace(t *testing.T) {
 	var has bool
 
 	fields.Fields(func(f field.Field) bool {
-		if f.Key == "date" && !f.Value.AsTime().IsZero() {
+		if f.Key == "date" && f.Value.Kind == field.KindTime && f.Value.AsTime().IsZero() {
 			has = true
 
 			return false

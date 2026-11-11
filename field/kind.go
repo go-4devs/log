@@ -105,7 +105,7 @@ func (l *Kind) UnmarshalText(in []byte) error {
 
 		return nil
 	default:
-		return fmt.Errorf("%w:filed(%v)", ErrUndefined, string(in))
+		return fmt.Errorf("%w:field(%v)", ErrUndefined, string(in))
 	}
 }
 

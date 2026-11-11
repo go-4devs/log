@@ -81,10 +81,6 @@ func (e *Entry) Fields() field.Fields {
 
 // String implement stringer.
 func (e *Entry) String() string {
-	if e == nil {
-		return ""
-	}
-
 	str := make([]string, len(e.fields)+1)
 	str[0] = e.Message()
 
@@ -96,10 +92,6 @@ func (e *Entry) String() string {
 }
 
 func (e *Entry) Message() string {
-	if e == nil {
-		return ""
-	}
-
 	switch {
 	case len(e.args) > 0 && e.format != "":
 		return fmt.Sprintf(e.format, e.args...)
@@ -111,38 +103,22 @@ func (e *Entry) Message() string {
 }
 
 func (e *Entry) Level() level.Level {
-	if e == nil {
-		return level.Debug
-	}
-
 	return e.level
 }
 
 func (e *Entry) SetLevel(level level.Level) *Entry {
-	if e == nil {
-		return New().SetLevel(level)
-	}
-
 	e.level = level
 
 	return e
 }
 
 func (e *Entry) SetMessage(msg string) *Entry {
-	if e == nil {
-		return New().SetMessage(msg)
-	}
-
 	e.format = msg
 
 	return e
 }
 
 func (e *Entry) SetMessagef(format string, args ...any) *Entry {
-	if e == nil {
-		return New().SetMessagef(format, args...)
-	}
-
 	e.format = format
 	e.args = append(e.args[:0], args...)
 
@@ -150,10 +126,6 @@ func (e *Entry) SetMessagef(format string, args ...any) *Entry {
 }
 
 func (e *Entry) Add(fields ...field.Field) *Entry {
-	if e == nil {
-		return New(WithFields(fields...))
-	}
-
 	e.fields = e.fields.Append(fields...)
 
 	return e

@@ -36,3 +36,27 @@ func TestNew(t *testing.T) {
 		t.Errorf("invalid suffix\n got: %s\nexpect:%s\n", buf.String(), expect)
 	}
 }
+
+func TestSevereLevelsDoNotStop(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+	buf := &bytes.Buffer{}
+	lgrus := lgr.New()
+	lgrus.SetOutput(buf)
+	lgrus.SetFormatter(&lgr.TextFormatter{DisableTimestamp: true})
+	handler := logrus.New(lgrus)
+
+	if _, err := handler(ctx, entry.New(entry.WithLevel(level.Alert), entry.WithMessage("down"))); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := handler(ctx, entry.New(entry.WithLevel(level.Emergency), entry.WithMessage("boom"))); err != nil {
+		t.Fatal(err)
+	}
+
+	got := buf.String()
+	if !strings.Contains(got, "down") || !strings.Contains(got, "boom") {
+		t.Fatalf("%s", got)
+	}
+}

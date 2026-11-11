@@ -195,7 +195,7 @@ func Complex128pValue(v *complex128) Value {
 
 // TimeValue returns a Value for a time.Time.
 func TimeValue(v time.Time) Value {
-	return newValue(KindTime, 0, v.UnixNano(), v.Location())
+	return newValue(KindTime, 0, 0, v)
 }
 
 // TimepValue returns a Value for a *time.Time.
@@ -251,7 +251,9 @@ func DurationsValue(values []time.Duration) Value {
 
 // GroupValue returns a new Value for a list of Fields.
 func GroupValue(as ...Field) Value {
-	return newValue(KindGroup, uint64(len(as)), 0, groupptr(unsafe.SliceData(as)))
+	copied := append([]Field(nil), as...)
+
+	return newValue(KindGroup, uint64(len(copied)), 0, groupptr(unsafe.SliceData(copied)))
 }
 
 func ErrorValue(value error) Value {
@@ -499,12 +501,12 @@ func (v Value) AsDuration() time.Duration {
 }
 
 func (v Value) AsTime() time.Time {
-	loc, ok := v.any.(*time.Location)
+	moment, ok := v.any.(time.Time)
 	if !ok {
 		return time.Time{}
 	}
 
-	return time.Unix(0, v.inum).In(loc)
+	return moment
 }
 
 func (v Value) AsError() error {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/go-4devs/log/entry"
 	"github.com/go-4devs/log/field"
@@ -86,18 +87,18 @@ func (l Logger) Panic(args ...any) {
 
 // Println log by info level and arguments.
 func (l Logger) Println(args ...any) {
-	writeOutput(l.write(context.Background(), level.Info, fmt.Sprintln(args...)))
+	writeOutput(l.write(context.Background(), level.Info, strings.TrimSuffix(fmt.Sprintln(args...), "\n")))
 }
 
 // Fatalln logs at alert level, then exits.
 func (l Logger) Fatalln(args ...any) {
-	writeOutput(l.write(context.Background(), level.Alert, fmt.Sprintln(args...)))
+	writeOutput(l.write(context.Background(), level.Alert, strings.TrimSuffix(fmt.Sprintln(args...), "\n")))
 	os.Exit(1)
 }
 
 // Panicln logs at emergency level, then panics.
 func (l Logger) Panicln(args ...any) {
-	writeOutput(l.write(context.Background(), level.Emergency, fmt.Sprintln(args...)))
+	writeOutput(l.write(context.Background(), level.Emergency, strings.TrimSuffix(fmt.Sprintln(args...), "\n")))
 	panic(fmt.Sprintln(args...))
 }
 
@@ -294,12 +295,7 @@ func writeOutput(_ int, err error) {
 }
 
 func (l Logger) writekvs(ctx context.Context, lvl level.Level, mst string, args []any) (int, error) {
-	data := entry.Get()
-	data = data.SetMessage(mst).SetLevel(lvl)
-
-	defer func() {
-		entry.Put(data)
-	}()
+	data := entry.New().SetMessage(mst).SetLevel(lvl)
 
 	for i := 0; i < len(args); i++ {
 		if f, ok := args[i].(field.Field); ok {
@@ -329,21 +325,13 @@ func (l Logger) writekvs(ctx context.Context, lvl level.Level, mst string, args 
 }
 
 func (l Logger) write(ctx context.Context, level level.Level, msg string, fields ...field.Field) (int, error) {
-	data := entry.Get()
-
-	defer func() {
-		entry.Put(data)
-	}()
+	data := entry.New()
 
 	return l(ctx, data.SetLevel(level).SetMessage(msg).Add(fields...))
 }
 
 func (l Logger) writef(ctx context.Context, level level.Level, format string, args ...any) (int, error) {
-	data := entry.Get()
-
-	defer func() {
-		entry.Put(data)
-	}()
+	data := entry.New()
 
 	return l(ctx, data.SetLevel(level).SetMessagef(format, args...))
 }

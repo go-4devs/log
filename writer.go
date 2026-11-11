@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"reflect"
 	"sync"
 
 	"github.com/go-4devs/log/entry"
@@ -75,7 +76,7 @@ func New(opts ...func(*option)) Logger {
 		opt(&log)
 	}
 
-	var mu sync.Mutex
+	mu := mutexFor(log.out)
 
 	return func(_ context.Context, entry *entry.Entry) (int, error) {
 		mu.Lock()
@@ -83,6 +84,37 @@ func New(opts ...func(*option)) Logger {
 
 		return log.format(log.out, entry)
 	}
+}
+
+// shortcut: pointer-writer locks live for the process, drop the map if writers are created per line
+//
+//nolint:gochecknoglobals
+var writerLocks sync.Map
+
+func mutexFor(w io.Writer) *sync.Mutex {
+	value := reflect.ValueOf(w)
+	switch value.Kind() {
+	case reflect.Pointer, reflect.Map, reflect.Chan, reflect.Func, reflect.Slice, reflect.UnsafePointer:
+		key := value.Pointer()
+		if key == 0 {
+			break
+		}
+
+		if found, ok := writerLocks.Load(key); ok {
+			mu, _ := found.(*sync.Mutex)
+
+			return mu
+		}
+
+		created := &sync.Mutex{}
+		actual, _ := writerLocks.LoadOrStore(key, created)
+		mu, _ := actual.(*sync.Mutex)
+
+		return mu
+	default:
+	}
+
+	return &sync.Mutex{}
 }
 
 type Encoder interface {
@@ -102,10 +134,6 @@ type bracketHead struct {
 
 func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 	return func(w io.Writer, data *entry.Entry) (int, error) {
-		if data == nil {
-			return 0, nil
-		}
-
 		buf := buffer.New()
 
 		defer func() {
@@ -154,10 +182,6 @@ func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 
 func FormatString(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 	return func(w io.Writer, entry *entry.Entry) (int, error) {
-		if entry == nil {
-			return 0, nil
-		}
-
 		buf := buffer.New()
 
 		defer func() {
@@ -183,10 +207,6 @@ func FormatString(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 
 func FormatJSON(enc Encoder) func(w io.Writer, entry *entry.Entry) (int, error) {
 	return func(w io.Writer, entry *entry.Entry) (int, error) {
-		if entry == nil {
-			return 0, nil
-		}
-
 		buf := buffer.New()
 
 		defer func() {

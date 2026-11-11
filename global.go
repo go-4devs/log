@@ -10,15 +10,26 @@ import (
 )
 
 //nolint:gochecknoglobals
-var global = With(New(),
-	WithTime(KeyTime, time.RFC3339),
-	WithLevel(KeyLevel, level.Debug),
-	WithExit(level.Alert),
-	WithPanic(level.Emergency),
-)
+var global Logger
 
-// SetLogger sets global used logger. This function is not thread-safe.
+//nolint:gochecknoinits // the default logger must exist before any call
+func init() {
+	global = With(New(),
+		WithTime(KeyTime, time.RFC3339),
+		WithLevel(KeyLevel, level.Debug),
+	)
+}
+
+// SetLogger sets the logger used by the package functions.
+// A nil logger is ignored.
+//
+// Warning: SetLogger is not safe for concurrent use.
+// Do not call it while other goroutines are logging.
 func SetLogger(l Logger) {
+	if l == nil {
+		return
+	}
+
 	global = l
 }
 

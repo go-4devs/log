@@ -3,8 +3,8 @@ package log_test
 import (
 	"bytes"
 	"context"
-	"io"
 	"os"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -90,35 +90,6 @@ func TestWriter(t *testing.T) {
 	}
 }
 
-func TestNilEntry(t *testing.T) {
-	t.Parallel()
-
-	if (*entry.Entry)(nil).Message() != "" {
-		t.Fatal("nil message")
-	}
-
-	buf := &bytes.Buffer{}
-	formats := []func(io.Writer, *entry.Entry) (int, error){
-		log.FormatString(field.NewEncoderText()),
-		log.FormatJSON(field.NewEncoderJSON()),
-		log.FormatWithBracket(field.NewEncoderText()),
-	}
-
-	for _, format := range formats {
-		buf.Reset()
-
-		n, err := format(buf, nil)
-		if err != nil || n != 0 || buf.Len() != 0 {
-			t.Fatalf("n=%d err=%v buf=%q", n, err, buf)
-		}
-	}
-
-	n, err := log.New(log.WithWriter(buf))(context.Background(), nil)
-	if err != nil || n != 0 || buf.Len() != 0 {
-		t.Fatalf("logger n=%d err=%v buf=%q", n, err, buf)
-	}
-}
-
 func TestNewConcurrentWrite(t *testing.T) {
 	t.Parallel()
 
@@ -174,16 +145,7 @@ func TestLogger(t *testing.T) {
 	buf := &bytes.Buffer{}
 	logger := log.New(log.WithWriter(buf)).With(log.WithContextValue(requestID), log.WithLevel(log.KeyLevel, level.Info))
 
-	_, err := logger(ctx, nil)
-	if err != nil {
-		t.Fatalf("expected <nil> err, got: %v", err)
-	}
-
-	if buf.String() != "" {
-		t.Errorf("invalid value\n got:%+v\n exp:\"\"", buf)
-	}
-
-	_, err = logger(ctx, entry.New().SetLevel(level.Error))
+	_, err := logger(ctx, entry.New().SetLevel(level.Error))
 	if err != nil {
 		t.Fatalf("expected <nil> err, got: %v", err)
 	}
@@ -192,5 +154,97 @@ func TestLogger(t *testing.T) {
 
 	if buf.String() != success {
 		t.Errorf("invalid value\n got:%+v\n exp:%+v", buf, success)
+	}
+}
+
+func TestHandlerKeepsEntry(t *testing.T) {
+	t.Parallel()
+
+	var first *entry.Entry
+
+	var calls int
+
+	logger := log.Logger(func(_ context.Context, item *entry.Entry) (int, error) {
+		if calls == 0 {
+			first = item
+		}
+
+		calls++
+
+		return 0, nil
+	})
+
+	logger.Info(context.Background(), "one")
+	logger.Info(context.Background(), "two")
+
+	if first.Message() != "one" {
+		t.Fatalf("kept %q", first.Message())
+	}
+}
+
+func TestPrintlnHasNoTrailingNewline(t *testing.T) {
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	log.New(log.WithWriter(buf)).Println("hello", "there")
+
+	if buf.String() != "msg=\"hello there\"\n" {
+		t.Fatalf("got %q", buf.String())
+	}
+}
+
+func TestTwoLoggersShareWriter(t *testing.T) {
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	left := log.New(log.WithWriter(buf))
+	right := log.New(log.WithWriter(buf))
+
+	var wg sync.WaitGroup
+
+	const lines = 40
+
+	wg.Add(lines * 2)
+
+	for range lines {
+		go func() {
+			defer wg.Done()
+
+			left.Info(context.Background(), "aaaaaaaa")
+		}()
+		go func() {
+			defer wg.Done()
+
+			right.Info(context.Background(), "bbbbbbbb")
+		}()
+	}
+
+	wg.Wait()
+
+	for line := range bytes.SplitSeq(bytes.TrimSuffix(buf.Bytes(), []byte("\n")), []byte("\n")) {
+		if bytes.Contains(line, []byte("aaaaaaaa")) && bytes.Contains(line, []byte("bbbbbbbb")) {
+			t.Fatalf("torn %q", line)
+		}
+	}
+}
+
+//nolint:paralleltest // replaces the process logger
+func TestGlobalSevereLevelsDoNotStop(t *testing.T) {
+	previous := log.Log()
+	buf := &bytes.Buffer{}
+
+	log.SetLogger(log.New(log.WithWriter(buf)))
+	t.Cleanup(func() { log.SetLogger(previous) })
+
+	log.Emerg(context.Background(), "disk")
+	log.Alert(context.Background(), "notice")
+	log.SetLogger(nil)
+	log.Info(context.Background(), "kept")
+
+	got := buf.String()
+	for _, part := range []string{"disk", "notice", "kept"} {
+		if !strings.Contains(got, part) {
+			t.Fatalf("%q missing %s", got, part)
+		}
 	}
 }

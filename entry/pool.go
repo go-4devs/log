@@ -10,11 +10,7 @@ var pool = sync.Pool{
 }
 
 func Get() *Entry {
-	entry, ok := pool.Get().(*Entry)
-	if !ok {
-		entry = New()
-	}
-
+	entry, _ := pool.Get().(*Entry)
 	entry.Reset()
 
 	return entry

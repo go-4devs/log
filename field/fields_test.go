@@ -2,6 +2,7 @@ package field_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/go-4devs/log/field"
 )
@@ -41,5 +42,30 @@ func TestFields_Replace(t *testing.T) {
 	o2, ok2 := fields.Replace(field.Any("new", "new data"))
 	if ok2 || o2.Key != "" {
 		t.Fatalf("failed set new data:%v", o2)
+	}
+}
+
+func TestTimeValueRoundTrip(t *testing.T) {
+	t.Parallel()
+
+	if got := field.Time("t", time.Time{}).Value.AsTime(); !got.IsZero() {
+		t.Fatalf("zero %s", got)
+	}
+
+	far := time.Date(1400, 1, 1, 0, 0, 0, 0, time.UTC)
+	if got := field.Time("t", far).Value.AsTime(); !got.Equal(far) {
+		t.Fatalf("got %s", got)
+	}
+}
+
+func TestGroupValueCopiesSlice(t *testing.T) {
+	t.Parallel()
+
+	items := []field.Field{field.String("user", "ann")}
+	group := field.Groups("g", items...)
+	items[0] = field.String("user", "bob")
+
+	if group.Value.AsGroup()[0].Value.AsString() != "ann" {
+		t.Fatalf("got %s", group.Value.AsGroup()[0].Value.AsString())
 	}
 }
