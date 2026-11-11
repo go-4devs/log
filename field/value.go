@@ -3,6 +3,7 @@ package field
 import (
 	"fmt"
 	"math"
+	"reflect"
 	"strconv"
 	"time"
 	"unsafe"
@@ -399,7 +400,7 @@ func AnyValue(v any) Value {
 	case Value:
 		return value
 	default:
-		return newValue(KindAny, 0, 0, value)
+		return newValue(KindAny, 0, 0, detachSlice(value))
 	}
 }
 
@@ -493,6 +494,10 @@ func (v Value) AsUint64() uint64 {
 }
 
 func (v Value) AsFloat32() float32 {
+	if v.Kind == KindFloat64 {
+		return float32(v.AsFloat64())
+	}
+
 	if v.num > math.MaxUint32 {
 		return 0
 	}
@@ -624,6 +629,18 @@ func (v Value) append(dst []byte) []byte {
 
 func copied[T any](in []T) []T {
 	return append([]T(nil), in...)
+}
+
+func detachSlice(value any) any {
+	src := reflect.ValueOf(value)
+	if src.Kind() != reflect.Slice || src.IsNil() {
+		return value
+	}
+
+	dst := reflect.MakeSlice(src.Type(), src.Len(), src.Len())
+	reflect.Copy(dst, src)
+
+	return dst.Interface()
 }
 
 func newValue(kind Kind, num uint64, inum int64, data any) Value {

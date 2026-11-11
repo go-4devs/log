@@ -182,6 +182,22 @@ func TestHandlerKeepsEntry(t *testing.T) {
 	}
 }
 
+func TestPaniclnPanicsTrimmedMessage(t *testing.T) {
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	logger := log.New(log.WithWriter(buf))
+
+	defer func() {
+		if recover() != "hello there" || buf.String() != "msg=\"hello there\"\n" {
+			t.Fatalf("panic log %q", buf.String())
+		}
+	}()
+
+	logger.Panicln("hello", "there")
+	t.Fatal("did not panic")
+}
+
 func TestPrintlnHasNoTrailingNewline(t *testing.T) {
 	t.Parallel()
 

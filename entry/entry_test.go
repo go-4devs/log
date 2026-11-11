@@ -42,6 +42,23 @@ func TestEntry_Replace(t *testing.T) {
 	}
 }
 
+func TestSetMessageDropsArgs(t *testing.T) {
+	t.Parallel()
+
+	ent := entry.New()
+	ent.SetMessagef("id=%d", 7)
+	ent.SetMessage("ready")
+
+	if ent.Message() != "ready" {
+		t.Fatalf("got %q", ent.Message())
+	}
+
+	ent = entry.New(entry.WithMessagef("id=%d", 7), entry.WithMessage("ready"))
+	if ent.Message() != "ready" {
+		t.Fatalf("option got %q", ent.Message())
+	}
+}
+
 func TestEntryResetLevel(t *testing.T) {
 	t.Parallel()
 

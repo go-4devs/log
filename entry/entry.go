@@ -28,7 +28,7 @@ func WithFields(fields ...field.Field) Option {
 
 func WithMessage(msg string) Option {
 	return func(e *Entry) {
-		e.format = msg
+		e.SetMessage(msg)
 	}
 }
 
@@ -50,7 +50,7 @@ func New(opts ...Option) *Entry {
 		fields: make(field.Fields, 0, defaultCap+1),
 		level:  level.Debug,
 		format: "",
-		args:   make([]any, 0, defaultCap+1),
+		args:   nil,
 	}
 
 	for _, opt := range opts {
@@ -114,6 +114,7 @@ func (e *Entry) SetLevel(level level.Level) *Entry {
 
 func (e *Entry) SetMessage(msg string) *Entry {
 	e.format = msg
+	e.args = nil
 
 	return e
 }

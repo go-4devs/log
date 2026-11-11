@@ -96,6 +96,27 @@ func TestStringsValueCopiesSlice(t *testing.T) {
 	}
 }
 
+func TestAsFloat32ReadsFloat64(t *testing.T) {
+	t.Parallel()
+
+	if got := field.Float32("x", 1.5).Value.AsFloat32(); got != 1.5 {
+		t.Fatalf("got %v", got)
+	}
+}
+
+func TestAnyIntSliceIsCopied(t *testing.T) {
+	t.Parallel()
+
+	nums := []int{1}
+	val := field.Any("n", nums).Value
+	nums[0] = 2
+
+	got, _ := val.Any().([]int)
+	if len(got) != 1 || got[0] != 1 {
+		t.Fatalf("got %#v", val.Any())
+	}
+}
+
 func TestKindUnmarshalJSONNumber(t *testing.T) {
 	t.Parallel()
 

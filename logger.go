@@ -98,8 +98,9 @@ func (l Logger) Fatalln(args ...any) {
 
 // Panicln logs at emergency level, then panics.
 func (l Logger) Panicln(args ...any) {
-	writeOutput(l.write(context.Background(), level.Emergency, strings.TrimSuffix(fmt.Sprintln(args...), "\n")))
-	panic(fmt.Sprintln(args...))
+	msg := strings.TrimSuffix(fmt.Sprintln(args...), "\n")
+	writeOutput(l.write(context.Background(), level.Emergency, msg))
+	panic(msg)
 }
 
 // EmergKVs sugared log by emergency level and key-values.
