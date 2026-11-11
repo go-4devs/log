@@ -30,6 +30,10 @@ func (l Kind) MarshalJSON() ([]byte, error) {
 }
 
 func (l *Kind) UnmarshalJSON(in []byte) error {
+	if len(in) < 2 || in[0] != '"' || in[len(in)-1] != '"' {
+		return fmt.Errorf("%w:field(%q)", ErrUndefined, in)
+	}
+
 	return l.UnmarshalText(in[1 : len(in)-1])
 }
 

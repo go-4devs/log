@@ -1,6 +1,7 @@
 package field_test
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -67,5 +68,44 @@ func TestGroupValueCopiesSlice(t *testing.T) {
 
 	if group.Value.AsGroup()[0].Value.AsString() != "ann" {
 		t.Fatalf("got %s", group.Value.AsGroup()[0].Value.AsString())
+	}
+}
+
+func TestAnyBytesAreBinaryAndCopied(t *testing.T) {
+	t.Parallel()
+
+	body := []byte("hi")
+	val := field.Any("body", body).Value
+	body[0] = 'z'
+
+	if val.Kind != field.KindBinary || string(val.AsBinary()) != "hi" {
+		t.Fatalf("got %s %q", val.Kind, val.AsBinary())
+	}
+}
+
+func TestStringsValueCopiesSlice(t *testing.T) {
+	t.Parallel()
+
+	names := []string{"ada"}
+	val := field.Strings("names", names...).Value
+	names[0] = "bob"
+
+	got, _ := val.Any().([]any)
+	if len(got) != 1 || got[0] != "ada" {
+		t.Fatalf("got %#v", val.Any())
+	}
+}
+
+func TestKindUnmarshalJSONNumber(t *testing.T) {
+	t.Parallel()
+
+	var kind field.Kind
+
+	if err := json.Unmarshal([]byte(`"bytes"`), &kind); err != nil || kind != field.KindBinary {
+		t.Fatalf("got %v %v", kind, err)
+	}
+
+	if err := json.Unmarshal([]byte("1"), &kind); err == nil {
+		t.Fatal("number must return an error")
 	}
 }

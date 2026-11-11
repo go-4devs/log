@@ -24,6 +24,8 @@ func StringpValue(value *string) Value {
 
 // StringsValue returns a new Value for a string.
 func StringsValue(value []string) Value {
+	value = copied(value)
+
 	return newValue(KindArray, uint64(len(value)), 0, func() []Value {
 		values := make([]Value, len(value))
 		for idx := range value {
@@ -46,6 +48,8 @@ func BoolValue(v bool) Value {
 
 // BoolsValue returns a Value for a []bool.
 func BoolsValue(values []bool) Value {
+	values = copied(values)
+
 	return newValue(KindArray, uint64(len(values)), 0, func() []Value {
 		vals := make([]Value, len(values))
 		for idx := range values {
@@ -72,6 +76,8 @@ func Uint64Value(v uint64) Value {
 
 // Uint64sValue returns a Value for a []uint64.
 func Uint64sValue(values []uint64) Value {
+	values = copied(values)
+
 	return newValue(KindArray, uint64(len(values)), 0, func() []Value {
 		vals := make([]Value, len(values))
 		for idx := range values {
@@ -84,6 +90,8 @@ func Uint64sValue(values []uint64) Value {
 
 // Uint8sValue returns a Value for a []uint8.
 func Uint8sValue(values []uint8) Value {
+	values = copied(values)
+
 	return newValue(KindArray, uint64(len(values)), 0, func() []Value {
 		vals := make([]Value, len(values))
 		for idx := range values {
@@ -110,6 +118,8 @@ func Int64Value(value int64) Value {
 
 // Int64sValue returns a Value for an []int64.
 func Int64sValue(value []int64) Value {
+	value = copied(value)
+
 	return newValue(KindArray, uint64(len(value)), 0, func() []Value {
 		vals := make([]Value, len(value))
 		for idx := range value {
@@ -136,6 +146,8 @@ func Float64Value(v float64) Value {
 
 // Float64sValue returns a Value for a floating-points number.
 func Float64sValue(values []float64) Value {
+	values = copied(values)
+
 	return newValue(KindArray, uint64(len(values)), 0, func() []Value {
 		vals := make([]Value, len(values))
 		for idx := range values {
@@ -157,6 +169,8 @@ func Float64pValue(v *float64) Value {
 
 // Complex64sValue returns a Value for a []complex64.
 func Complex64sValue(values []complex64) Value {
+	values = copied(values)
+
 	return newValue(KindArray, uint64(len(values)), 0, func() []Value {
 		vals := make([]Value, len(values))
 		for idx := range values {
@@ -174,6 +188,8 @@ func Complex128Value(v complex128) Value {
 
 // Complex128sValue returns a Value for a []complex128.
 func Complex128sValue(values []complex128) Value {
+	values = copied(values)
+
 	return newValue(KindArray, uint64(len(values)), 0, func() []Value {
 		vals := make([]Value, len(values))
 		for idx := range values {
@@ -209,6 +225,8 @@ func TimepValue(v *time.Time) Value {
 
 // TimesValue returns a Value for a []time.Time.
 func TimesValue(values []time.Time) Value {
+	values = copied(values)
+
 	return newValue(KindArray, uint64(len(values)), 0, func() []Value {
 		vals := make([]Value, len(values))
 		for idx := range values {
@@ -239,6 +257,8 @@ func DurationpValue(v *time.Duration) Value {
 
 // DurationsValue returns a Value for a *time.Duration.
 func DurationsValue(values []time.Duration) Value {
+	values = copied(values)
+
 	return newValue(KindArray, uint64(len(values)), 0, func() []Value {
 		vals := make([]Value, len(values))
 		for idx := range values {
@@ -261,6 +281,8 @@ func ErrorValue(value error) Value {
 }
 
 func ErrorsValue(value []error) Value {
+	value = copied(value)
+
 	return newValue(KindArray, uint64(len(value)), 0, func() []Value {
 		vals := make([]Value, len(value))
 		for idx := range value {
@@ -272,6 +294,8 @@ func ErrorsValue(value []error) Value {
 }
 
 func BytesValue(value []byte) Value {
+	value = copied(value)
+
 	return newValue(KindBinary, 0, 0, value)
 }
 
@@ -335,7 +359,7 @@ func AnyValue(v any) Value {
 	case uint8:
 		return Uint64Value(uint64(value))
 	case []uint8:
-		return Uint8sValue(value)
+		return BytesValue(value)
 	case uint16:
 		return Uint64Value(uint64(value))
 	case uint32:
@@ -596,6 +620,10 @@ func (v Value) append(dst []byte) []byte {
 	default:
 		return fmt.Appendf(dst, "%+v", v.any)
 	}
+}
+
+func copied[T any](in []T) []T {
+	return append([]T(nil), in...)
 }
 
 func newValue(kind Kind, num uint64, inum int64, data any) Value {

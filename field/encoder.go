@@ -149,6 +149,17 @@ func (b BaseEncoder) AppendField(dst []byte, field Field) []byte {
 }
 
 func (b BaseEncoder) AppendKey(dst []byte, key string, prefix string) []byte {
+	// A bare group delimiter stays outside the key. A dotted path is part of the key,
+	// so JSON quotes "user.name" instead of writing user."name".
+	if prefix != "" && prefix != string(b.group.deli) {
+		sep, path := cutSep(prefix, b.group.deli)
+		if sep != "" {
+			dst = append(dst, sep...)
+		}
+
+		return b.AppendString(dst, path+key)
+	}
+
 	if prefix != "" {
 		dst = append(dst, prefix...)
 	}
@@ -209,21 +220,43 @@ func (b BaseEncoder) AppendBytes(dst, in []byte) []byte {
 	return strconv.AppendQuote(dst, string(in))
 }
 
-func (b BaseEncoder) appendGroup(dst []byte, fields []Field, prefix string) []byte {
-	if len(fields) > 0 {
-		dst = b.appendField(dst, fields[0], ".", b.delimeter)
-		for _, field := range fields[1:] {
-			dst = b.appendField(append(dst, b.group.deli), field, prefix, b.delimeter)
+func (b BaseEncoder) appendGroup(dst []byte, fields []Field, path string) []byte {
+	sep, rest := cutSep(path, b.group.deli)
+
+	for i, field := range fields {
+		next := rest
+		if i == 0 {
+			next = sep + rest
+		} else if b.group.deli != 0 {
+			next = string(b.group.deli) + rest
 		}
+
+		dst = b.appendField(dst, field, next, b.delimeter)
 	}
 
 	return dst
 }
 
 func (b BaseEncoder) appendField(dst []byte, field Field, prefix string, deli byte) []byte {
+	if field.Value.Kind == KindClosure {
+		field.Value = AnyValue(field.Value.Resolve())
+	}
+
+	if field.Value.Kind == KindGroup {
+		return b.appendGroup(dst, field.Value.AsGroup(), prefix+field.Key+".")
+	}
+
 	dst = b.AppendKey(dst, field.Key, prefix)
 
 	return b.appendValue(dst, field.Value, field.Key+".", deli)
+}
+
+func cutSep(prefix string, deli byte) (string, string) {
+	if deli != 0 && prefix != "" && prefix[0] == deli {
+		return prefix[:1], prefix[1:]
+	}
+
+	return "", prefix
 }
 
 //nolint:cyclop
