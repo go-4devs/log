@@ -3,6 +3,7 @@ package log
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"runtime"
 	"time"
@@ -80,7 +81,7 @@ func WithContextValue(keys ...fmt.Stringer) Middleware {
 
 func WithName(name string) Middleware {
 	return func(ctx context.Context, data *entry.Entry, handler Logger) (int, error) {
-		return handler(ctx, data.Replace(KeyName, field.StringValue(name)))
+		return handler(ctx, data.Replace(KeyName, slog.StringValue(name)))
 	}
 }
 

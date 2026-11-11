@@ -1,6 +1,7 @@
 package entry_test
 
 import (
+	"log/slog"
 	"testing"
 	"time"
 
@@ -16,8 +17,8 @@ func TestEntry_Replace(t *testing.T) {
 		field.Any("inti", "init date"),
 	))
 
-	ent = ent.Replace("date", field.StringValue("some date"))
-	ent = ent.Replace("date", field.TimeValue(time.Time{}))
+	ent = ent.Replace("date", slog.StringValue("some date"))
+	ent = ent.Replace("date", slog.TimeValue(time.Time{}))
 
 	fields := ent.Fields()
 
@@ -27,15 +28,13 @@ func TestEntry_Replace(t *testing.T) {
 
 	var has bool
 
-	fields.Fields(func(f field.Field) bool {
-		if f.Key == "date" && f.Value.Kind == field.KindTime && f.Value.AsTime().IsZero() {
+	for _, attr := range fields {
+		if attr.Key == "date" && attr.Value.Kind() == slog.KindTime && attr.Value.Time().IsZero() {
 			has = true
 
-			return false
+			break
 		}
-
-		return true
-	})
+	}
 
 	if !has {
 		t.Fatal("failed reace value")

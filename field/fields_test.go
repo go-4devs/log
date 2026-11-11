@@ -1,7 +1,7 @@
 package field_test
 
 import (
-	"encoding/json"
+	"log/slog"
 	"testing"
 	"time"
 
@@ -16,45 +16,15 @@ func TestNilErrorString(t *testing.T) {
 	}
 }
 
-func TestFields_Append(t *testing.T) {
-	t.Parallel()
-
-	fields := field.Fields{field.Any("any", "value")}
-	fields = fields.Append(field.String("string", "value"))
-
-	if len(fields) != 2 {
-		t.Fatalf("require 2 field got %v", len(fields))
-	}
-}
-
-func TestFields_Replace(t *testing.T) {
-	t.Parallel()
-
-	fields := field.Fields{
-		field.Any("any", "any init"),
-		field.Any("replace", "replace init"),
-	}
-
-	old, ok := fields.Replace(field.Int64("replace", 42))
-	if !ok || old.Key != "replace" || old.Value != field.StringValue("replace init") {
-		t.Fatalf("failed replace value:%v", old)
-	}
-
-	o2, ok2 := fields.Replace(field.Any("new", "new data"))
-	if ok2 || o2.Key != "" {
-		t.Fatalf("failed set new data:%v", o2)
-	}
-}
-
 func TestTimeValueRoundTrip(t *testing.T) {
 	t.Parallel()
 
-	if got := field.Time("t", time.Time{}).Value.AsTime(); !got.IsZero() {
+	if got := field.Time("t", time.Time{}).Value.Time(); !got.IsZero() {
 		t.Fatalf("zero %s", got)
 	}
 
 	far := time.Date(1400, 1, 1, 0, 0, 0, 0, time.UTC)
-	if got := field.Time("t", far).Value.AsTime(); !got.Equal(far) {
+	if got := field.Time("t", far).Value.Time(); !got.Equal(far) {
 		t.Fatalf("got %s", got)
 	}
 }
@@ -62,12 +32,12 @@ func TestTimeValueRoundTrip(t *testing.T) {
 func TestGroupValueCopiesSlice(t *testing.T) {
 	t.Parallel()
 
-	items := []field.Field{field.String("user", "ann")}
+	items := []slog.Attr{field.String("user", "ann")}
 	group := field.Groups("g", items...)
 	items[0] = field.String("user", "bob")
 
-	if group.Value.AsGroup()[0].Value.AsString() != "ann" {
-		t.Fatalf("got %s", group.Value.AsGroup()[0].Value.AsString())
+	if group.Value.Group()[0].Value.String() != "ann" {
+		t.Fatalf("got %s", group.Value.Group()[0].Value.String())
 	}
 }
 
@@ -78,8 +48,9 @@ func TestAnyBytesAreBinaryAndCopied(t *testing.T) {
 	val := field.Any("body", body).Value
 	body[0] = 'z'
 
-	if val.Kind != field.KindBinary || string(val.AsBinary()) != "hi" {
-		t.Fatalf("got %s %q", val.Kind, val.AsBinary())
+	got, _ := val.Any().([]byte)
+	if string(got) != "hi" {
+		t.Fatalf("got %s %q", val.Kind(), got)
 	}
 }
 
@@ -90,7 +61,7 @@ func TestStringsValueCopiesSlice(t *testing.T) {
 	val := field.Strings("names", names...).Value
 	names[0] = "bob"
 
-	got, _ := val.Any().([]any)
+	got, _ := field.ValueAny(val).([]any)
 	if len(got) != 1 || got[0] != "ada" {
 		t.Fatalf("got %#v", val.Any())
 	}
@@ -99,7 +70,7 @@ func TestStringsValueCopiesSlice(t *testing.T) {
 func TestAsFloat32ReadsFloat64(t *testing.T) {
 	t.Parallel()
 
-	if got := field.Float32("x", 1.5).Value.AsFloat32(); got != 1.5 {
+	if got := field.Float32("x", 1.5).Value.Float64(); got != 1.5 {
 		t.Fatalf("got %v", got)
 	}
 }
@@ -114,19 +85,5 @@ func TestAnyIntSliceIsCopied(t *testing.T) {
 	got, _ := val.Any().([]int)
 	if len(got) != 1 || got[0] != 1 {
 		t.Fatalf("got %#v", val.Any())
-	}
-}
-
-func TestKindUnmarshalJSONNumber(t *testing.T) {
-	t.Parallel()
-
-	var kind field.Kind
-
-	if err := json.Unmarshal([]byte(`"bytes"`), &kind); err != nil || kind != field.KindBinary {
-		t.Fatalf("got %v %v", kind, err)
-	}
-
-	if err := json.Unmarshal([]byte("1"), &kind); err == nil {
-		t.Fatal("number must return an error")
 	}
 }

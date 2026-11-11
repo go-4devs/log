@@ -1,11 +1,9 @@
 package field
 
-type LogValuer interface {
-	LogValue() any
-}
+import "log/slog"
 
 type ClosureFn func() any
 
-func (v ClosureFn) LogValue() any {
-	return v()
+func (v ClosureFn) LogValue() slog.Value {
+	return AnyValue(v())
 }

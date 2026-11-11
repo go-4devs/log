@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"testing"
 	"time"
 
@@ -86,8 +87,8 @@ func fakeFmtArgs() []any {
 	}
 }
 
-func fakeFields() []field.Field {
-	return []field.Field{
+func fakeFields() []slog.Attr {
+	return []slog.Attr{
 		field.Int("int", _tenInts[0]),
 		field.Ints("ints", _tenInts...),
 		field.String("string", _tenStrings[0]),

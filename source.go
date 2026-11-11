@@ -3,6 +3,7 @@ package log
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -96,6 +97,6 @@ func (l Source) MarshalJSON() ([]byte, error) {
 	return fmt.Appendf(nil, `{"file":%q,"line":%d,"func":%q}`, l.File, l.Line, l.Func), nil
 }
 
-func errSourceField(skip, mframe int) field.Field {
+func errSourceField(skip, mframe int) slog.Attr {
 	return field.String(KeySource, fmt.Sprintf("source not found by frames[%d:%d]", skip, mframe))
 }

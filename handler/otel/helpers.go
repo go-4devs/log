@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/go-4devs/log/entry"
-	"github.com/go-4devs/log/field"
 	"github.com/go-4devs/log/level"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -41,7 +40,7 @@ func levels(lvl level.Level) Level {
 
 func addEvent(ctx context.Context, data *entry.Entry) {
 	span := trace.SpanFromContext(ctx)
-	attrs := make([]attribute.KeyValue, 0, data.Fields().Len()+levelFields)
+	attrs := make([]attribute.KeyValue, 0, len(data.Fields())+levelFields)
 
 	lvl := levels(data.Level())
 	attrs = append(attrs,
@@ -49,11 +48,9 @@ func addEvent(ctx context.Context, data *entry.Entry) {
 		attribute.Int(fieldSeverityNumber, int(lvl)),
 	)
 
-	data.Fields().Fields(func(f field.Field) bool {
-		attrs = append(attrs, attribute.String(f.Key, f.Value.String()))
-
-		return true
-	})
+	for _, attr := range data.Fields() {
+		attrs = append(attrs, attribute.String(attr.Key, attr.Value.String()))
+	}
 
 	span.AddEvent(data.Message(), trace.WithAttributes(attrs...))
 }

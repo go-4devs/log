@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"math"
 	"os"
 	"sync/atomic"
@@ -305,7 +306,7 @@ func Example_withGroup() {
 		),
 	)
 	log.WarnKV(ctx, "error message", field.ValuerFn("valuer_field", func() any {
-		return field.Fields{
+		return []slog.Attr{
 			field.Int("int_value", math.MaxInt),
 			field.Uint8("uint8_value", math.MaxUint8),
 		}

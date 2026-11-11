@@ -2,6 +2,7 @@ package entry
 
 import (
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/go-4devs/log/field"
@@ -16,11 +17,11 @@ type Option func(*Entry)
 
 func WithCapacity(c int) Option {
 	return func(e *Entry) {
-		e.fields = make(field.Fields, 0, c+1)
+		e.fields = make([]slog.Attr, 0, c+1)
 	}
 }
 
-func WithFields(fields ...field.Field) Option {
+func WithFields(fields ...slog.Attr) Option {
 	return func(e *Entry) {
 		e.fields = fields
 	}
@@ -47,7 +48,7 @@ func WithLevel(lvl level.Level) Option {
 
 func New(opts ...Option) *Entry {
 	entry := &Entry{
-		fields: make(field.Fields, 0, defaultCap+1),
+		fields: make([]slog.Attr, 0, defaultCap+1),
 		level:  level.Debug,
 		format: "",
 		args:   nil,
@@ -65,7 +66,7 @@ type Entry struct {
 	format string
 	args   []any
 	level  level.Level
-	fields field.Fields
+	fields []slog.Attr
 }
 
 func (e *Entry) Reset() {
@@ -75,7 +76,7 @@ func (e *Entry) Reset() {
 	e.level = level.Debug
 }
 
-func (e *Entry) Fields() field.Fields {
+func (e *Entry) Fields() []slog.Attr {
 	return e.fields
 }
 
@@ -126,8 +127,8 @@ func (e *Entry) SetMessagef(format string, args ...any) *Entry {
 	return e
 }
 
-func (e *Entry) Add(fields ...field.Field) *Entry {
-	e.fields = e.fields.Append(fields...)
+func (e *Entry) Add(fields ...slog.Attr) *Entry {
+	e.fields = append(e.fields, fields...)
 
 	return e
 }
@@ -140,12 +141,16 @@ func (e *Entry) AddString(key, value string) *Entry {
 	return e.Add(field.String(key, value))
 }
 
-func (e *Entry) Replace(key string, value field.Value) *Entry {
-	_, has := e.fields.Replace(field.Any(key, value))
+func (e *Entry) Replace(key string, value slog.Value) *Entry {
+	attr := field.Any(key, value)
 
-	if !has {
-		e.AddAny(key, value)
+	for i := range e.fields {
+		if e.fields[i].Key == key {
+			e.fields[i] = attr
+
+			return e
+		}
 	}
 
-	return e
+	return e.Add(attr)
 }

@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"strings"
 
 	"github.com/go-4devs/log/entry"
-	"github.com/go-4devs/log/field"
 	"github.com/go-4devs/log/level"
 )
 
@@ -144,42 +144,42 @@ func (l Logger) DebugKVs(ctx context.Context, msg string, args ...any) {
 }
 
 // EmergKV log by emergency level and key-values.
-func (l Logger) EmergKV(ctx context.Context, msg string, args ...field.Field) {
+func (l Logger) EmergKV(ctx context.Context, msg string, args ...slog.Attr) {
 	writeOutput(l.write(ctx, level.Emergency, msg, args...))
 }
 
 // AlertKV log by alert level and key-values.
-func (l Logger) AlertKV(ctx context.Context, msg string, args ...field.Field) {
+func (l Logger) AlertKV(ctx context.Context, msg string, args ...slog.Attr) {
 	writeOutput(l.write(ctx, level.Alert, msg, args...))
 }
 
 // CritKV log by critical level and key-values.
-func (l Logger) CritKV(ctx context.Context, msg string, args ...field.Field) {
+func (l Logger) CritKV(ctx context.Context, msg string, args ...slog.Attr) {
 	writeOutput(l.write(ctx, level.Critical, msg, args...))
 }
 
 // ErrKV log by error level and key-values.
-func (l Logger) ErrKV(ctx context.Context, msg string, args ...field.Field) {
+func (l Logger) ErrKV(ctx context.Context, msg string, args ...slog.Attr) {
 	writeOutput(l.write(ctx, level.Error, msg, args...))
 }
 
 // WarnKV log by warning level and key-values.
-func (l Logger) WarnKV(ctx context.Context, msg string, args ...field.Field) {
+func (l Logger) WarnKV(ctx context.Context, msg string, args ...slog.Attr) {
 	writeOutput(l.write(ctx, level.Warning, msg, args...))
 }
 
 // NoticeKV log by notice level and key-values.
-func (l Logger) NoticeKV(ctx context.Context, msg string, args ...field.Field) {
+func (l Logger) NoticeKV(ctx context.Context, msg string, args ...slog.Attr) {
 	writeOutput(l.write(ctx, level.Notice, msg, args...))
 }
 
 // InfoKV log by info level and key-values.
-func (l Logger) InfoKV(ctx context.Context, msg string, args ...field.Field) {
+func (l Logger) InfoKV(ctx context.Context, msg string, args ...slog.Attr) {
 	writeOutput(l.write(ctx, level.Info, msg, args...))
 }
 
 // DebugKV log by debug level and key-values.
-func (l Logger) DebugKV(ctx context.Context, msg string, args ...field.Field) {
+func (l Logger) DebugKV(ctx context.Context, msg string, args ...slog.Attr) {
 	writeOutput(l.write(ctx, level.Debug, msg, args...))
 }
 
@@ -240,7 +240,7 @@ func (l Logger) Panicf(format string, args ...any) {
 	panic(fmt.Sprintf(format, args...))
 }
 
-func (l Logger) Writer(ctx context.Context, level level.Level, fields ...field.Field) io.Writer {
+func (l Logger) Writer(ctx context.Context, level level.Level, fields ...slog.Attr) io.Writer {
 	return writer{
 		ctx:    ctx,
 		level:  level,
@@ -255,7 +255,7 @@ type writer struct {
 
 	ctx    context.Context
 	level  level.Level
-	fields []field.Field
+	fields []slog.Attr
 }
 
 func (w writer) WithLevel(level level.Level) writer {
@@ -276,7 +276,7 @@ func (w writer) WithContext(ctx context.Context) writer {
 	}
 }
 
-func (w writer) WithFields(fields ...field.Field) writer {
+func (w writer) WithFields(fields ...slog.Attr) writer {
 	return writer{
 		level:  w.level,
 		Logger: w.Logger,
@@ -299,7 +299,7 @@ func (l Logger) writekvs(ctx context.Context, lvl level.Level, mst string, args 
 	data := entry.New().SetMessage(mst).SetLevel(lvl)
 
 	for i := 0; i < len(args); i++ {
-		if f, ok := args[i].(field.Field); ok {
+		if f, ok := args[i].(slog.Attr); ok {
 			data = data.Add(f)
 
 			continue
@@ -325,7 +325,7 @@ func (l Logger) writekvs(ctx context.Context, lvl level.Level, mst string, args 
 	return l(ctx, data)
 }
 
-func (l Logger) write(ctx context.Context, level level.Level, msg string, fields ...field.Field) (int, error) {
+func (l Logger) write(ctx context.Context, level level.Level, msg string, fields ...slog.Attr) (int, error) {
 	data := entry.New()
 
 	return l(ctx, data.SetLevel(level).SetMessage(msg).Add(fields...))

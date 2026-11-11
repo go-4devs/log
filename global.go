@@ -3,9 +3,9 @@ package log
 import (
 	"context"
 	"io"
+	"log/slog"
 	"time"
 
-	"github.com/go-4devs/log/field"
 	"github.com/go-4devs/log/level"
 )
 
@@ -149,42 +149,42 @@ func DebugKVs(ctx context.Context, msg string, args ...any) {
 }
 
 // EmergKV  log by emergency level and key-values.
-func EmergKV(ctx context.Context, msg string, args ...field.Field) {
+func EmergKV(ctx context.Context, msg string, args ...slog.Attr) {
 	Log().EmergKV(ctx, msg, args...)
 }
 
 // AlertKV log by alert level and key-values.
-func AlertKV(ctx context.Context, msg string, args ...field.Field) {
+func AlertKV(ctx context.Context, msg string, args ...slog.Attr) {
 	Log().AlertKV(ctx, msg, args...)
 }
 
 // CritKV log by critical level and key-values.
-func CritKV(ctx context.Context, msg string, args ...field.Field) {
+func CritKV(ctx context.Context, msg string, args ...slog.Attr) {
 	Log().CritKV(ctx, msg, args...)
 }
 
 // ErrKV log by error level and key-values.
-func ErrKV(ctx context.Context, msg string, args ...field.Field) {
+func ErrKV(ctx context.Context, msg string, args ...slog.Attr) {
 	Log().ErrKV(ctx, msg, args...)
 }
 
 // WarnKV log by warning level and key-values.
-func WarnKV(ctx context.Context, msg string, args ...field.Field) {
+func WarnKV(ctx context.Context, msg string, args ...slog.Attr) {
 	Log().WarnKV(ctx, msg, args...)
 }
 
 // NoticeKV log by notice level and key-values.
-func NoticeKV(ctx context.Context, msg string, args ...field.Field) {
+func NoticeKV(ctx context.Context, msg string, args ...slog.Attr) {
 	Log().NoticeKV(ctx, msg, args...)
 }
 
 // InfoKV log by info level and key-values.
-func InfoKV(ctx context.Context, msg string, args ...field.Field) {
+func InfoKV(ctx context.Context, msg string, args ...slog.Attr) {
 	Log().InfoKV(ctx, msg, args...)
 }
 
 // DebugKV log by debug level and key-values.
-func DebugKV(ctx context.Context, msg string, args ...field.Field) {
+func DebugKV(ctx context.Context, msg string, args ...slog.Attr) {
 	Log().DebugKV(ctx, msg, args...)
 }
 

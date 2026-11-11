@@ -45,12 +45,10 @@ func Development(options ...zap.Option) log.Logger {
 // New create handler by zap logger.
 func New(logger *zap.Logger) log.Logger {
 	return func(ctx context.Context, data *entry.Entry) (int, error) {
-		zf := make([]zap.Field, 0, data.Fields().Len())
-		data.Fields().Fields(func(f field.Field) bool {
-			zf = append(zf, zap.Any(f.Key, f.Value.Any()))
-
-			return true
-		})
+		zf := make([]zap.Field, 0, len(data.Fields()))
+		for _, attr := range data.Fields() {
+			zf = append(zf, zap.Any(attr.Key, field.ValueAny(attr.Value)))
+		}
 
 		switch data.Level() {
 		case level.Emergency:

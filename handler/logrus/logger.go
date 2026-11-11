@@ -20,12 +20,10 @@ func Standard() log.Logger {
 // Deprecated: delete after 0.7.0
 func New(logger *logrus.Logger) log.Logger {
 	return func(ctx context.Context, data *entry.Entry) (int, error) {
-		lrgFields := make(logrus.Fields, data.Fields().Len())
-		data.Fields().Fields(func(f field.Field) bool {
-			lrgFields[f.Key] = f.Value.Any()
-
-			return true
-		})
+		lrgFields := make(logrus.Fields, len(data.Fields()))
+		for _, attr := range data.Fields() {
+			lrgFields[attr.Key] = field.ValueAny(attr.Value)
+		}
 
 		row := logger.WithContext(ctx).WithFields(lrgFields)
 

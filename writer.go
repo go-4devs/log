@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"reflect"
+	"slices"
 	"sync"
 
 	"github.com/go-4devs/log/entry"
@@ -118,18 +120,18 @@ func mutexFor(w io.Writer) *sync.Mutex {
 }
 
 type Encoder interface {
-	AppendValue(dst []byte, val field.Value) []byte
-	AppendField(dst []byte, val field.Field) []byte
+	AppendValue(dst []byte, val slog.Value) []byte
+	AppendField(dst []byte, val slog.Attr) []byte
 }
 
 type bracketHead struct {
-	timeField   field.Field
-	nameField   field.Field
-	sourceField field.Field
+	timeField   slog.Attr
+	nameField   slog.Attr
+	sourceField slog.Attr
 	hasTime     bool
 	hasName     bool
 	hasSource   bool
-	rest        []field.Field
+	rest        []slog.Attr
 }
 
 func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
@@ -148,7 +150,7 @@ func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 		}
 
 		_, _ = buf.WriteString("[")
-		*buf = enc.AppendValue(*buf, field.StringValue(data.Level().String()))
+		*buf = enc.AppendValue(*buf, slog.StringValue(data.Level().String()))
 		_, _ = buf.WriteString("]")
 
 		if head.hasName {
@@ -163,7 +165,7 @@ func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 			_, _ = buf.WriteString(" ")
 		}
 
-		*buf = enc.AppendValue(*buf, field.StringValue(data.Message()))
+		*buf = enc.AppendValue(*buf, slog.StringValue(data.Message()))
 
 		for _, item := range head.rest {
 			*buf = enc.AppendField(*buf, item)
@@ -232,23 +234,25 @@ func FormatJSON(enc Encoder) func(w io.Writer, entry *entry.Entry) (int, error) 
 	}
 }
 
-func bracketHeadFrom(fields field.Fields) bracketHead {
+func isKey(key string, keys ...string) bool {
+	return slices.Contains(keys, key)
+}
+
+func bracketHeadFrom(fields []slog.Attr) bracketHead {
 	var head bracketHead
 
-	fields.Fields(func(item field.Field) bool {
+	for _, item := range fields {
 		switch {
-		case !head.hasTime && item.IsKey(KeyTime):
+		case !head.hasTime && item.Key == KeyTime:
 			head.timeField, head.hasTime = item, true
-		case !head.hasName && item.IsKey(KeyName):
+		case !head.hasName && item.Key == KeyName:
 			head.nameField, head.hasName = item, true
-		case !head.hasSource && item.IsKey(KeySource):
+		case !head.hasSource && item.Key == KeySource:
 			head.sourceField, head.hasSource = item, true
-		case !item.IsKey(KeyTime, KeySource, KeyName, KeyLevel):
+		case !isKey(item.Key, KeyTime, KeySource, KeyName, KeyLevel):
 			head.rest = append(head.rest, item)
 		}
-
-		return true
-	})
+	}
 
 	return head
 }
