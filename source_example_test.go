@@ -4,7 +4,7 @@ import (
 	"context"
 	"path/filepath"
 
-	"gitoa.ru/go-4devs/log"
+	"github.com/go-4devs/log"
 )
 
 func ExampleWithSource() {

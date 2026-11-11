@@ -1,0 +1,27 @@
+name: Go Action
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  goaction:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: '1.27.4'
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.15.0
+          args: --verbose
+
+      - name: Run go test
+        run: go test ./...

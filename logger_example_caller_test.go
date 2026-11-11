@@ -3,8 +3,8 @@ package log_test
 import (
 	"path/filepath"
 
-	"gitoa.ru/go-4devs/log"
-	"gitoa.ru/go-4devs/log/level"
+	"github.com/go-4devs/log"
+	"github.com/go-4devs/log/level"
 )
 
 func ExampleNew_withCaller() {

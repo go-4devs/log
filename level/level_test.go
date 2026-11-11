@@ -3,7 +3,7 @@ package level_test
 import (
 	"testing"
 
-	"gitoa.ru/go-4devs/log/level"
+	"github.com/go-4devs/log/level"
 )
 
 func TestMarshalJSON(t *testing.T) {

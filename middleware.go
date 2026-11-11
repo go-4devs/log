@@ -7,9 +7,9 @@ import (
 	"runtime"
 	"time"
 
-	"gitoa.ru/go-4devs/log/entry"
-	"gitoa.ru/go-4devs/log/field"
-	"gitoa.ru/go-4devs/log/level"
+	"github.com/go-4devs/log/entry"
+	"github.com/go-4devs/log/field"
+	"github.com/go-4devs/log/level"
 )
 
 // Middleware handle.

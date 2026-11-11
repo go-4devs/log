@@ -7,8 +7,8 @@ import (
 	"runtime"
 	"strings"
 
-	"gitoa.ru/go-4devs/log/entry"
-	"gitoa.ru/go-4devs/log/field"
+	"github.com/go-4devs/log/entry"
+	"github.com/go-4devs/log/field"
 )
 
 const funcName = "Logger"
@@ -16,7 +16,7 @@ const funcName = "Logger"
 func WithSource(items int, trimPath func(string) string) Middleware {
 	const (
 		skip    = 4
-		pkgName = "gitoa.ru/go-4devs/log"
+		pkgName = "github.com/go-4devs/log"
 	)
 
 	return WithCallers(items, skip, pkgName, trimPath)

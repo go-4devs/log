@@ -5,13 +5,15 @@ linters:
     - wsl
     - noinlineerr
     - revive
+    - exhaustruct
+    - gomodguard
   settings:
     depguard:
       rules:
         main:
           allow:
             - $gostd
-            - gitoa.ru
+            - github.com/go-4devs
 
     funcorder:
       constructor: false
@@ -54,7 +56,7 @@ linters:
       - std-error-handling
     rules:
       - linters:
-          - exhaustruct
+          - exhaustruct_v5
           - gochecknoglobals
           - ireturn
           - mnd

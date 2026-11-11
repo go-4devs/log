@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"gitoa.ru/go-4devs/log"
+	"github.com/go-4devs/log"
 )
 
 func TestSource_MarshalJSON(t *testing.T) {

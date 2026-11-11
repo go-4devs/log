@@ -1,7 +1,7 @@
 package log
 
 import (
-	"gitoa.ru/go-4devs/log/field"
+	"github.com/go-4devs/log/field"
 )
 
 // Field create field.

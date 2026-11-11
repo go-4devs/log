@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"gitoa.ru/go-4devs/log/entry"
-	"gitoa.ru/go-4devs/log/field"
+	"github.com/go-4devs/log/entry"
+	"github.com/go-4devs/log/field"
 )
 
 func TestEntry_Replace(t *testing.T) {

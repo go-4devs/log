@@ -6,12 +6,12 @@ import (
 	"io"
 	"os"
 
-	"gitoa.ru/go-4devs/log/entry"
-	"gitoa.ru/go-4devs/log/field"
-	"gitoa.ru/go-4devs/log/level"
+	"github.com/go-4devs/log/entry"
+	"github.com/go-4devs/log/field"
+	"github.com/go-4devs/log/level"
 )
 
-var _ io.Writer = (Logger)(nil)
+var _ io.Writer = Logger(nil)
 
 const badKey = "!BADKEY"
 

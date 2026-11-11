@@ -3,8 +3,8 @@ package field_test
 import (
 	"testing"
 
-	"gitoa.ru/go-4devs/log/field"
-	"gitoa.ru/go-4devs/log/internal/buffer"
+	"github.com/go-4devs/log/field"
+	"github.com/go-4devs/log/internal/buffer"
 )
 
 func TestEncoderJSONAppendField_string(t *testing.T) {

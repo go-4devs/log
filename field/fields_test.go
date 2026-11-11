@@ -3,7 +3,7 @@ package field_test
 import (
 	"testing"
 
-	"gitoa.ru/go-4devs/log/field"
+	"github.com/go-4devs/log/field"
 )
 
 func TestFields_Append(t *testing.T) {
