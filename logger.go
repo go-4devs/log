@@ -8,7 +8,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-4devs/log/entry"
+	logentry "github.com/go-4devs/log/entry"
+	"github.com/go-4devs/log/internal/entry"
 	"github.com/go-4devs/log/level"
 )
 
@@ -17,7 +18,7 @@ var _ io.Writer = Logger(nil)
 const badKey = "!BADKEY"
 
 // Logger logged message.
-type Logger func(ctx context.Context, entry *entry.Entry) (int, error)
+type Logger func(ctx context.Context, entry *logentry.Entry) (int, error)
 
 func (l Logger) Write(in []byte) (int, error) {
 	return l.write(context.Background(), level.Info, string(in))
@@ -296,7 +297,10 @@ func writeOutput(_ int, err error) {
 }
 
 func (l Logger) writekvs(ctx context.Context, lvl level.Level, mst string, args []any) (int, error) {
-	data := entry.New().SetMessage(mst).SetLevel(lvl)
+	data := entry.Get()
+	defer entry.Put(data)
+
+	data.SetMessage(mst).SetLevel(lvl)
 
 	for i := 0; i < len(args); i++ {
 		if f, ok := args[i].(slog.Attr); ok {
@@ -326,13 +330,15 @@ func (l Logger) writekvs(ctx context.Context, lvl level.Level, mst string, args 
 }
 
 func (l Logger) write(ctx context.Context, level level.Level, msg string, fields ...slog.Attr) (int, error) {
-	data := entry.New()
+	data := entry.Get()
+	defer entry.Put(data)
 
 	return l(ctx, data.SetLevel(level).SetMessage(msg).Add(fields...))
 }
 
 func (l Logger) writef(ctx context.Context, level level.Level, format string, args ...any) (int, error) {
-	data := entry.New()
+	data := entry.Get()
+	defer entry.Put(data)
 
 	return l(ctx, data.SetLevel(level).SetMessagef(format, args...))
 }

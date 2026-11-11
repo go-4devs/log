@@ -157,19 +157,13 @@ func TestLogger(t *testing.T) {
 	}
 }
 
-func TestHandlerKeepsEntry(t *testing.T) {
+func TestHandlerSeesMessageDuringCall(t *testing.T) {
 	t.Parallel()
 
-	var first *entry.Entry
-
-	var calls int
+	var got []string
 
 	logger := log.Logger(func(_ context.Context, item *entry.Entry) (int, error) {
-		if calls == 0 {
-			first = item
-		}
-
-		calls++
+		got = append(got, item.Message())
 
 		return 0, nil
 	})
@@ -177,8 +171,8 @@ func TestHandlerKeepsEntry(t *testing.T) {
 	logger.Info(context.Background(), "one")
 	logger.Info(context.Background(), "two")
 
-	if first.Message() != "one" {
-		t.Fatalf("kept %q", first.Message())
+	if len(got) != 2 || got[0] != "one" || got[1] != "two" {
+		t.Fatalf("%q", got)
 	}
 }
 

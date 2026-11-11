@@ -3,6 +3,7 @@ package entry
 import (
 	"fmt"
 	"log/slog"
+	"slices"
 	"strings"
 
 	"github.com/go-4devs/log/field"
@@ -78,6 +79,15 @@ func (e *Entry) Reset() {
 
 func (e *Entry) Fields() []slog.Attr {
 	return e.fields
+}
+
+// Clone returns a copy with its own fields and args.
+func (e *Entry) Clone() *Entry {
+	clone := *e
+	clone.fields = slices.Clone(e.fields)
+	clone.args = slices.Clone(e.args)
+
+	return &clone
 }
 
 // String implement stringer.

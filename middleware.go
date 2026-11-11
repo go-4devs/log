@@ -13,7 +13,9 @@ import (
 	"github.com/go-4devs/log/level"
 )
 
-// Middleware handle.
+// Middleware handles a log entry and may pass it to handler.
+// After handler returns, the entry may change.
+// Use e.Clone to keep a copy.
 type Middleware func(ctx context.Context, e *entry.Entry, handler Logger) (int, error)
 
 // With add middleware to logger.

@@ -58,6 +58,25 @@ func TestSetMessageDropsArgs(t *testing.T) {
 	}
 }
 
+func TestCloneKeepsFields(t *testing.T) {
+	t.Parallel()
+
+	ent := entry.New()
+	ent.SetMessagef("id=%d", 7).Add(field.String("k", "v"))
+
+	clone := ent.Clone()
+	ent.SetMessage("other").Replace("k", slog.StringValue("changed")).Add(field.String("extra", "x"))
+
+	if clone.Message() != "id=7" {
+		t.Fatalf("msg %q", clone.Message())
+	}
+
+	fields := clone.Fields()
+	if len(fields) != 1 || fields[0].Value.String() != "v" {
+		t.Fatalf("fields %v", fields)
+	}
+}
+
 func TestEntryResetLevel(t *testing.T) {
 	t.Parallel()
 

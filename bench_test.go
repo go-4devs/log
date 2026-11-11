@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"strconv"
 	"testing"
 	"time"
 
@@ -176,4 +177,25 @@ func BenchmarkDisabledAccumulatedContext(b *testing.B) {
 			}
 		})
 	})
+}
+
+func BenchmarkAttrs(b *testing.B) {
+	ctx := context.Background()
+	logger := NewLogger()
+
+	for _, count := range []int{5, 10, 50, 100} {
+		attrs := make([]slog.Attr, count)
+		for i := range attrs {
+			attrs[i] = field.Int("k", i)
+		}
+
+		b.Run(strconv.Itoa(count), func(b *testing.B) {
+			b.ReportAllocs()
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					logger.InfoKV(ctx, getMessage(0), attrs...)
+				}
+			})
+		})
+	}
 }
