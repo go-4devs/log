@@ -6,6 +6,7 @@ import (
 	"strconv"
 )
 
+// NewEncoderJSON returns an encoder that writes JSON object fields.
 func NewEncoderJSON(opts ...func(*BaseEncoder)) BaseEncoder {
 	opts = append([]func(*BaseEncoder){
 		WithAppendString(strconv.AppendQuote),

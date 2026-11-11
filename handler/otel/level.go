@@ -1,7 +1,8 @@
 package otel
 
+// Level is an OpenTelemetry severity number.
+//
 //go:generate stringer -type=Level -linecomment -output=level_string.go
-
 type Level int
 
 const (

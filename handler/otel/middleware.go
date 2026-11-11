@@ -7,6 +7,8 @@ import (
 	"github.com/go-4devs/log/entry"
 )
 
+// Middleware records an OpenTelemetry event and passes the entry on.
+//
 // Deprecated: delete after 0.7.0
 func Middleware() log.Middleware {
 	return func(ctx context.Context, e *entry.Entry, handler log.Logger) (int, error) {

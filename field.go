@@ -6,12 +6,12 @@ import (
 	"github.com/go-4devs/log/field"
 )
 
-// Field create field.
+// Field returns an slog attribute for value.
 func Field(key string, value any) slog.Attr {
 	return field.Any(key, value)
 }
 
-// FieldError new errors field with key error.
+// FieldError returns an error attribute with the key "error".
 func FieldError(err error) slog.Attr {
 	return field.Error("error", err)
 }

@@ -17,9 +17,11 @@ var _ io.Writer = Logger(nil)
 
 const badKey = "!BADKEY"
 
-// Logger logged message.
+// Logger handles one log entry.
+// The entry may be changed or reused after Logger returns. Use entry.Entry.Clone to keep a copy.
 type Logger func(ctx context.Context, entry *logentry.Entry) (int, error)
 
+// Write logs in as an info message.
 func (l Logger) Write(in []byte) (int, error) {
 	return l.write(context.Background(), level.Info, string(in))
 }
@@ -241,6 +243,7 @@ func (l Logger) Panicf(format string, args ...any) {
 	panic(fmt.Sprintf(format, args...))
 }
 
+// Writer returns an io.Writer that logs at level with fields.
 func (l Logger) Writer(ctx context.Context, level level.Level, fields ...slog.Attr) io.Writer {
 	return writer{
 		ctx:    ctx,
@@ -259,6 +262,7 @@ type writer struct {
 	fields []slog.Attr
 }
 
+// WithLevel returns a copy that logs at level.
 func (w writer) WithLevel(level level.Level) writer {
 	return writer{
 		level:  level,
@@ -268,6 +272,7 @@ func (w writer) WithLevel(level level.Level) writer {
 	}
 }
 
+// WithContext returns a copy that logs with ctx.
 func (w writer) WithContext(ctx context.Context) writer {
 	return writer{
 		level:  w.level,
@@ -277,6 +282,7 @@ func (w writer) WithContext(ctx context.Context) writer {
 	}
 }
 
+// WithFields returns a copy that adds fields to each write.
 func (w writer) WithFields(fields ...slog.Attr) writer {
 	return writer{
 		level:  w.level,
@@ -286,6 +292,7 @@ func (w writer) WithFields(fields ...slog.Attr) writer {
 	}
 }
 
+// Write logs in at the writer level.
 func (w writer) Write(in []byte) (int, error) {
 	return w.write(w.ctx, w.level, string(in), w.fields...)
 }

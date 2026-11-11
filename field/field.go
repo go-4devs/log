@@ -1,3 +1,6 @@
+// Package field builds slog attributes.
+// Slice helpers copy their input. Stringp, Boolp, Int64p, Uint64p, Float64p,
+// Complex128p, Timep, and Durationp turn a nil pointer into a nil value.
 package field
 
 import (
@@ -5,12 +8,14 @@ import (
 	"time"
 )
 
+// Empty returns a zero attribute.
 func Empty() slog.Attr {
 	var attr slog.Attr
 
 	return attr
 }
 
+// Any returns an attribute. Nil pointers of known types become a nil value and slices are copied.
 func Any(key string, value any) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -18,6 +23,7 @@ func Any(key string, value any) slog.Attr {
 	}
 }
 
+// String returns an attribute.
 func String(key, value string) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -25,6 +31,7 @@ func String(key, value string) slog.Attr {
 	}
 }
 
+// Stringp returns an attribute. A nil pointer is a nil value.
 func Stringp(key string, value *string) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -32,6 +39,7 @@ func Stringp(key string, value *string) slog.Attr {
 	}
 }
 
+// Strings returns an array attribute. The slice is copied.
 func Strings(key string, value ...string) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -39,6 +47,7 @@ func Strings(key string, value ...string) slog.Attr {
 	}
 }
 
+// Bool returns an attribute.
 func Bool(key string, value bool) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -46,6 +55,7 @@ func Bool(key string, value bool) slog.Attr {
 	}
 }
 
+// Bools returns an array attribute. The slice is copied.
 func Bools(key string, value ...bool) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -53,6 +63,7 @@ func Bools(key string, value ...bool) slog.Attr {
 	}
 }
 
+// Boolp returns an attribute. A nil pointer is a nil value.
 func Boolp(key string, value *bool) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -60,6 +71,7 @@ func Boolp(key string, value *bool) slog.Attr {
 	}
 }
 
+// Uint returns an attribute.
 func Uint(key string, value uint) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -67,6 +79,7 @@ func Uint(key string, value uint) slog.Attr {
 	}
 }
 
+// Uints returns an array attribute. The slice is copied.
 func Uints(key string, value ...uint) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -74,6 +87,7 @@ func Uints(key string, value ...uint) slog.Attr {
 	}
 }
 
+// Uintp returns an attribute for the pointed value.
 func Uintp(key string, value *uint) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -81,6 +95,7 @@ func Uintp(key string, value *uint) slog.Attr {
 	}
 }
 
+// Uint8 returns an attribute.
 func Uint8(key string, value uint8) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -88,6 +103,7 @@ func Uint8(key string, value uint8) slog.Attr {
 	}
 }
 
+// Uint8s returns an array attribute. The slice is copied.
 func Uint8s(key string, value ...uint8) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -95,6 +111,7 @@ func Uint8s(key string, value ...uint8) slog.Attr {
 	}
 }
 
+// Uint8p returns an attribute for the pointed value.
 func Uint8p(key string, value *uint8) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -102,6 +119,7 @@ func Uint8p(key string, value *uint8) slog.Attr {
 	}
 }
 
+// Uint16 returns an attribute.
 func Uint16(key string, value uint16) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -109,6 +127,7 @@ func Uint16(key string, value uint16) slog.Attr {
 	}
 }
 
+// Uint16s returns an array attribute. The slice is copied.
 func Uint16s(key string, value ...uint16) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -116,6 +135,7 @@ func Uint16s(key string, value ...uint16) slog.Attr {
 	}
 }
 
+// Uint16p returns an attribute for the pointed value.
 func Uint16p(key string, value *uint16) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -123,6 +143,7 @@ func Uint16p(key string, value *uint16) slog.Attr {
 	}
 }
 
+// Uint32 returns an attribute.
 func Uint32(key string, value uint32) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -130,6 +151,7 @@ func Uint32(key string, value uint32) slog.Attr {
 	}
 }
 
+// Uint32s returns an array attribute. The slice is copied.
 func Uint32s(key string, value ...uint32) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -137,6 +159,7 @@ func Uint32s(key string, value ...uint32) slog.Attr {
 	}
 }
 
+// Uint32p returns an attribute for the pointed value.
 func Uint32p(key string, value *uint32) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -144,6 +167,7 @@ func Uint32p(key string, value *uint32) slog.Attr {
 	}
 }
 
+// Uint64 returns an attribute.
 func Uint64(key string, value uint64) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -151,6 +175,7 @@ func Uint64(key string, value uint64) slog.Attr {
 	}
 }
 
+// Uint64s returns an array attribute. The slice is copied.
 func Uint64s(key string, value ...uint64) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -158,6 +183,7 @@ func Uint64s(key string, value ...uint64) slog.Attr {
 	}
 }
 
+// Uint64p returns an attribute. A nil pointer is a nil value.
 func Uint64p(key string, value *uint64) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -165,6 +191,7 @@ func Uint64p(key string, value *uint64) slog.Attr {
 	}
 }
 
+// Int returns an attribute.
 func Int(key string, value int) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -172,6 +199,7 @@ func Int(key string, value int) slog.Attr {
 	}
 }
 
+// Ints returns an array attribute. The slice is copied.
 func Ints(key string, value ...int) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -179,6 +207,7 @@ func Ints(key string, value ...int) slog.Attr {
 	}
 }
 
+// Intp returns an attribute for the pointed value.
 func Intp(key string, value *int) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -186,6 +215,7 @@ func Intp(key string, value *int) slog.Attr {
 	}
 }
 
+// Int8 returns an attribute.
 func Int8(key string, value int8) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -193,6 +223,7 @@ func Int8(key string, value int8) slog.Attr {
 	}
 }
 
+// Int8s returns an array attribute. The slice is copied.
 func Int8s(key string, value ...int8) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -200,6 +231,7 @@ func Int8s(key string, value ...int8) slog.Attr {
 	}
 }
 
+// Int8p returns an attribute for the pointed value.
 func Int8p(key string, value *int8) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -207,6 +239,7 @@ func Int8p(key string, value *int8) slog.Attr {
 	}
 }
 
+// Int16 returns an attribute.
 func Int16(key string, value int16) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -214,6 +247,7 @@ func Int16(key string, value int16) slog.Attr {
 	}
 }
 
+// Int16s returns an array attribute. The slice is copied.
 func Int16s(key string, value ...int16) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -221,6 +255,7 @@ func Int16s(key string, value ...int16) slog.Attr {
 	}
 }
 
+// Int16p returns an attribute for the pointed value.
 func Int16p(key string, value *int16) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -228,6 +263,7 @@ func Int16p(key string, value *int16) slog.Attr {
 	}
 }
 
+// Int32 returns an attribute.
 func Int32(key string, value int32) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -235,6 +271,7 @@ func Int32(key string, value int32) slog.Attr {
 	}
 }
 
+// Int32s returns an array attribute. The slice is copied.
 func Int32s(key string, value ...int32) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -242,6 +279,7 @@ func Int32s(key string, value ...int32) slog.Attr {
 	}
 }
 
+// Int32p returns an attribute for the pointed value.
 func Int32p(key string, value *int32) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -249,6 +287,7 @@ func Int32p(key string, value *int32) slog.Attr {
 	}
 }
 
+// Int64 returns an attribute.
 func Int64(key string, value int64) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -256,6 +295,7 @@ func Int64(key string, value int64) slog.Attr {
 	}
 }
 
+// Int64s returns an array attribute. The slice is copied.
 func Int64s(key string, value ...int64) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -263,6 +303,7 @@ func Int64s(key string, value ...int64) slog.Attr {
 	}
 }
 
+// Int64p returns an attribute. A nil pointer is a nil value.
 func Int64p(key string, value *int64) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -270,6 +311,7 @@ func Int64p(key string, value *int64) slog.Attr {
 	}
 }
 
+// Float32 returns an attribute.
 func Float32(key string, value float32) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -277,6 +319,7 @@ func Float32(key string, value float32) slog.Attr {
 	}
 }
 
+// Float32s returns an array attribute. The slice is copied.
 func Float32s(key string, value ...float32) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -284,6 +327,7 @@ func Float32s(key string, value ...float32) slog.Attr {
 	}
 }
 
+// Float32p returns an attribute for the pointed value.
 func Float32p(key string, value *float32) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -291,6 +335,7 @@ func Float32p(key string, value *float32) slog.Attr {
 	}
 }
 
+// Float64 returns an attribute.
 func Float64(key string, value float64) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -298,6 +343,7 @@ func Float64(key string, value float64) slog.Attr {
 	}
 }
 
+// Float64s returns an array attribute. The slice is copied.
 func Float64s(key string, value ...float64) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -305,6 +351,7 @@ func Float64s(key string, value ...float64) slog.Attr {
 	}
 }
 
+// Float64p returns an attribute. A nil pointer is a nil value.
 func Float64p(key string, value *float64) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -312,6 +359,7 @@ func Float64p(key string, value *float64) slog.Attr {
 	}
 }
 
+// Complex64 returns an attribute.
 func Complex64(key string, value complex64) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -319,6 +367,7 @@ func Complex64(key string, value complex64) slog.Attr {
 	}
 }
 
+// Complex64s returns an array attribute. The slice is copied.
 func Complex64s(key string, value ...complex64) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -326,6 +375,7 @@ func Complex64s(key string, value ...complex64) slog.Attr {
 	}
 }
 
+// Complex64p returns an attribute for the pointed value.
 func Complex64p(key string, value *complex64) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -333,6 +383,7 @@ func Complex64p(key string, value *complex64) slog.Attr {
 	}
 }
 
+// Complex128 returns an attribute.
 func Complex128(key string, value complex128) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -340,6 +391,7 @@ func Complex128(key string, value complex128) slog.Attr {
 	}
 }
 
+// Complex128s returns an array attribute. The slice is copied.
 func Complex128s(key string, value ...complex128) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -347,6 +399,7 @@ func Complex128s(key string, value ...complex128) slog.Attr {
 	}
 }
 
+// Complex128p returns an attribute. A nil pointer is a nil value.
 func Complex128p(key string, value *complex128) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -354,6 +407,7 @@ func Complex128p(key string, value *complex128) slog.Attr {
 	}
 }
 
+// Uintptr returns an attribute.
 func Uintptr(key string, value uintptr) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -361,6 +415,7 @@ func Uintptr(key string, value uintptr) slog.Attr {
 	}
 }
 
+// Uintptrs returns an array attribute. The slice is copied.
 func Uintptrs(key string, value ...uintptr) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -368,6 +423,7 @@ func Uintptrs(key string, value ...uintptr) slog.Attr {
 	}
 }
 
+// Uintptrp returns an attribute for the pointed value.
 func Uintptrp(key string, value *uintptr) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -375,6 +431,7 @@ func Uintptrp(key string, value *uintptr) slog.Attr {
 	}
 }
 
+// Bytes returns a copied byte slice. The text and JSON encoders quote the bytes.
 func Bytes(key string, value []byte) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -382,6 +439,7 @@ func Bytes(key string, value []byte) slog.Attr {
 	}
 }
 
+// Duration returns an attribute.
 func Duration(key string, value time.Duration) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -389,6 +447,7 @@ func Duration(key string, value time.Duration) slog.Attr {
 	}
 }
 
+// Durations returns an array attribute. The slice is copied.
 func Durations(key string, value ...time.Duration) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -396,6 +455,7 @@ func Durations(key string, value ...time.Duration) slog.Attr {
 	}
 }
 
+// Durationp returns an attribute. A nil pointer is a nil value.
 func Durationp(key string, value *time.Duration) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -403,6 +463,7 @@ func Durationp(key string, value *time.Duration) slog.Attr {
 	}
 }
 
+// Time returns an attribute.
 func Time(key string, value time.Time) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -410,6 +471,7 @@ func Time(key string, value time.Time) slog.Attr {
 	}
 }
 
+// Times returns an array attribute. The slice is copied.
 func Times(key string, value ...time.Time) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -417,6 +479,7 @@ func Times(key string, value ...time.Time) slog.Attr {
 	}
 }
 
+// Timep returns an attribute. A nil pointer is a nil value.
 func Timep(key string, value *time.Time) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -424,6 +487,7 @@ func Timep(key string, value *time.Time) slog.Attr {
 	}
 }
 
+// FormatTime returns an attribute formatted when it is logged.
 func FormatTime(key, format string, value time.Time) slog.Attr {
 	return slog.Attr{
 		Key: key,
@@ -433,6 +497,7 @@ func FormatTime(key, format string, value time.Time) slog.Attr {
 	}
 }
 
+// FormatTimes returns an attribute formatted when it is logged.
 func FormatTimes(key, format string, value ...time.Time) slog.Attr {
 	return slog.Attr{
 		Key: key,
@@ -447,6 +512,7 @@ func FormatTimes(key, format string, value ...time.Time) slog.Attr {
 	}
 }
 
+// FormatTimep returns an attribute formatted when it is logged.
 func FormatTimep(key, format string, value *time.Time) slog.Attr {
 	isNill := value == nil
 
@@ -462,6 +528,7 @@ func FormatTimep(key, format string, value *time.Time) slog.Attr {
 	}
 }
 
+// Error returns an error attribute. A nil error is an empty string.
 func Error(key string, value error) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -469,6 +536,7 @@ func Error(key string, value error) slog.Attr {
 	}
 }
 
+// Errors returns an array of errors. The slice is copied.
 func Errors(key string, value ...error) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -476,6 +544,7 @@ func Errors(key string, value ...error) slog.Attr {
 	}
 }
 
+// Groups returns a group attribute. The slice is copied.
 func Groups(key string, value ...slog.Attr) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -483,6 +552,7 @@ func Groups(key string, value ...slog.Attr) slog.Attr {
 	}
 }
 
+// Valuer returns an attribute resolved through slog.LogValuer.
 func Valuer(key string, value slog.LogValuer) slog.Attr {
 	return slog.Attr{
 		Key:   key,
@@ -490,6 +560,7 @@ func Valuer(key string, value slog.LogValuer) slog.Attr {
 	}
 }
 
+// ValuerFn returns an attribute computed when it is logged.
 func ValuerFn(key string, value ClosureFn) slog.Attr {
 	return slog.Attr{
 		Key:   key,

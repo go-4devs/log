@@ -1,3 +1,4 @@
+// Package zap writes log entries with a zap logger.
 package zap
 
 import (
@@ -12,16 +13,22 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// Nop returns a logger that discards every record.
+//
 // Deprecated: delete after 0.7.0
 func Nop() log.Logger {
 	return New(zap.NewNop())
 }
 
+// Example returns a logger around zap's example logger.
+//
 // Deprecated: delete after 0.7.0
 func Example(options ...zap.Option) log.Logger {
 	return New(zap.NewExample(options...))
 }
 
+// Production returns a logger around zap's production logger.
+//
 // Deprecated: delete after 0.7.0
 func Production(options ...zap.Option) log.Logger {
 	z, err := zap.NewProduction(options...)
@@ -32,6 +39,8 @@ func Production(options ...zap.Option) log.Logger {
 	return New(z)
 }
 
+// Development returns a logger around zap's development logger.
+//
 // Deprecated: delete after 0.7.0
 func Development(options ...zap.Option) log.Logger {
 	z, err := zap.NewDevelopment(options...)
@@ -42,7 +51,7 @@ func Development(options ...zap.Option) log.Logger {
 	return New(z)
 }
 
-// New create handler by zap logger.
+// New returns a logger that writes to logger.
 func New(logger *zap.Logger) log.Logger {
 	return func(ctx context.Context, data *entry.Entry) (int, error) {
 		zf := make([]zap.Field, 0, len(data.Fields()))

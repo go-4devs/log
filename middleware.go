@@ -81,6 +81,7 @@ func WithContextValue(keys ...fmt.Stringer) Middleware {
 	}
 }
 
+// WithName sets the logger name, replacing a previous name.
 func WithName(name string) Middleware {
 	return func(ctx context.Context, data *entry.Entry, handler Logger) (int, error) {
 		return handler(ctx, data.Replace(KeyName, slog.StringValue(name)))

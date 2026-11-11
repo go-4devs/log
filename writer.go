@@ -15,30 +15,28 @@ import (
 	"github.com/go-4devs/log/internal/buffer"
 )
 
-// Keys for "built-in" attributes.
+// Keys for built-in attributes.
 const (
-	// KeyTime is the key used by the built-in handlers for the time
-	// when the log method is called. The associated Value is a [time.Time].
+	// KeyTime is the key for the time attribute.
 	KeyTime = "time"
-	// KeyLevel is the key used by the built-in handlers for the level
-	// of the log call. The associated value is a [Level].
+	// KeyLevel is the key for the level name.
 	KeyLevel = "level"
-	// KeyMessage is the key used by the built-in handlers for the
-	// message of the log call. The associated value is a string.
+	// KeyMessage is the key for the log message.
 	KeyMessage = "msg"
-	// KeySource is the key used by the built-in handlers for the source file
-	// and line of the log call. The associated value is a string.
+	// KeySource is the key for the caller location.
 	KeySource = "source"
-	// KeyName logger name.
+	// KeyName is the key for the logger name.
 	KeyName = "name"
 )
 
+// WithWriter sets the output writer.
 func WithWriter(w io.Writer) func(*option) {
 	return func(o *option) {
 		o.out = w
 	}
 }
 
+// WithStdout writes logs to standard output.
 func WithStdout() func(*option) {
 	return func(o *option) {
 		o.out = os.Stdout
@@ -119,6 +117,7 @@ func mutexFor(w io.Writer) *sync.Mutex {
 	return &sync.Mutex{}
 }
 
+// Encoder appends one attribute or value.
 type Encoder interface {
 	AppendValue(dst []byte, val slog.Value) []byte
 	AppendField(dst []byte, val slog.Attr) []byte
@@ -134,6 +133,7 @@ type bracketHead struct {
 	rest        []slog.Attr
 }
 
+// FormatWithBracket writes the level and message in a bracket layout.
 func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 	return func(w io.Writer, data *entry.Entry) (int, error) {
 		buf := buffer.New()
@@ -182,6 +182,7 @@ func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 	}
 }
 
+// FormatString writes the message and attributes as text.
 func FormatString(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 	return func(w io.Writer, entry *entry.Entry) (int, error) {
 		buf := buffer.New()
@@ -207,6 +208,7 @@ func FormatString(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 	}
 }
 
+// FormatJSON writes one JSON object.
 func FormatJSON(enc Encoder) func(w io.Writer, entry *entry.Entry) (int, error) {
 	return func(w io.Writer, entry *entry.Entry) (int, error) {
 		buf := buffer.New()

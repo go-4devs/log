@@ -1,3 +1,4 @@
+// Package entry pools log entries for the root logger.
 package entry
 
 import (
@@ -15,6 +16,7 @@ var entries = sync.Pool{
 	},
 }
 
+// Get returns a reset entry from the pool.
 func Get() *logentry.Entry {
 	ent, _ := entries.Get().(*logentry.Entry)
 	ent.Reset()
@@ -22,6 +24,7 @@ func Get() *logentry.Entry {
 	return ent
 }
 
+// Put returns ent to the pool. Do not use ent after Put.
 func Put(ent *logentry.Entry) {
 	entries.Put(ent)
 }

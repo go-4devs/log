@@ -6,6 +6,7 @@ import (
 	"log/slog"
 )
 
+// NewEncoderText returns an encoder that writes space-separated text fields.
 func NewEncoderText(opts ...func(*BaseEncoder)) BaseEncoder {
 	opts = append([]func(*BaseEncoder){
 		WithGroupConfig(0, 0, ' '),

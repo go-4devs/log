@@ -1,3 +1,4 @@
+// Package logrus writes log entries with a logrus logger.
 package logrus
 
 import (
@@ -10,13 +11,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Standard create new standard logrus handler.
+// Standard returns a logger around the standard logrus logger.
+//
 // Deprecated: delete after 0.7.0
 func Standard() log.Logger {
 	return New(logrus.StandardLogger())
 }
 
-// New create new logrus handler.
+// New returns a logger that writes to logger.
+//
 // Deprecated: delete after 0.7.0
 func New(logger *logrus.Logger) log.Logger {
 	return func(ctx context.Context, data *entry.Entry) (int, error) {

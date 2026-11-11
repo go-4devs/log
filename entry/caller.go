@@ -6,6 +6,7 @@ import (
 	"strconv"
 )
 
+// Caller returns file:line for the frame depth calls above this helper.
 func Caller(depth int, full bool) string {
 	const offset = 3
 

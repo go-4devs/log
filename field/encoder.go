@@ -17,36 +17,41 @@ const (
 	complex128Bits = 128
 )
 
+// Encoder appends one attribute or value to a buffer.
 type Encoder interface {
 	AppendField(dst []byte, attr slog.Attr) []byte
 	AppendValue(dst []byte, val slog.Value) []byte
 }
 
+// WithAppendString sets how strings are written.
 func WithAppendString(fn func(dst []byte, in string) []byte) func(*BaseEncoder) {
 	return func(be *BaseEncoder) {
 		be.AppendString = fn
 	}
 }
 
+// WithNullValue sets the text used for a nil value.
 func WithNullValue(in string) func(*BaseEncoder) {
 	return func(be *BaseEncoder) {
 		be.nullValue = []byte(in)
 	}
 }
 
+// WithDelimeter sets the byte between a key and its value.
 func WithDelimeter(in byte) func(*BaseEncoder) {
 	return func(be *BaseEncoder) {
 		be.delimeter = in
 	}
 }
 
-// WithGropuConfig set group config.
+// WithGropuConfig sets the group delimiters.
 //
 // Deprecated: use WithGroupConfig.
 func WithGropuConfig(start, end, deli byte) func(*BaseEncoder) {
 	return WithGroupConfig(start, end, deli)
 }
 
+// WithGroupConfig sets the group start, end, and separator bytes.
 func WithGroupConfig(start, end, deli byte) func(*BaseEncoder) {
 	return func(be *BaseEncoder) {
 		be.group = groupConfig{
@@ -57,12 +62,14 @@ func WithGroupConfig(start, end, deli byte) func(*BaseEncoder) {
 	}
 }
 
+// WithDefaultValue sets the fallback used for values the encoder does not handle.
 func WithDefaultValue(fn func(dst []byte, e Encoder, val slog.Value) []byte) func(*BaseEncoder) {
 	return func(be *BaseEncoder) {
 		be.DefaultValue = fn
 	}
 }
 
+// NewEncoder returns an encoder that writes text with '=' between keys and values.
 func NewEncoder(opts ...func(*BaseEncoder)) BaseEncoder {
 	be := BaseEncoder{
 		nullValue: []byte("null"),
@@ -97,6 +104,7 @@ type groupConfig struct {
 	deli  byte
 }
 
+// BaseEncoder writes slog values as text or JSON.
 type BaseEncoder struct {
 	nullValue    []byte
 	group        groupConfig
@@ -107,10 +115,12 @@ type BaseEncoder struct {
 	DefaultValue func(dst []byte, e Encoder, val slog.Value) []byte
 }
 
+// AppendValue appends val.
 func (b BaseEncoder) AppendValue(dst []byte, val slog.Value) []byte {
 	return b.appendValue(dst, val, "", 0)
 }
 
+// AppendDelimiter appends deli when it is not zero.
 func (b BaseEncoder) AppendDelimiter(dst []byte, deli byte) []byte {
 	if deli == 0 {
 		return dst
@@ -119,14 +129,17 @@ func (b BaseEncoder) AppendDelimiter(dst []byte, deli byte) []byte {
 	return append(dst, deli)
 }
 
+// AppendDuration appends d using its String method.
 func (b BaseEncoder) AppendDuration(dst []byte, d time.Duration) []byte {
 	return b.AppendString(dst, d.String())
 }
 
+// AppendTime appends t using the encoder time format.
 func (b BaseEncoder) AppendTime(dst []byte, t time.Time) []byte {
 	return b.AppendString(dst, t.Format(b.timeFormat))
 }
 
+// AppendString appends in, quoting it when the text is not a safe token.
 func AppendString(dst []byte, in string) []byte {
 	if needsQuoting(in) {
 		return strconv.AppendQuote(dst, in)
@@ -135,6 +148,7 @@ func AppendString(dst []byte, in string) []byte {
 	return append(dst, in...)
 }
 
+// AppendField appends attr. Groups are flattened as dotted keys.
 func (b BaseEncoder) AppendField(dst []byte, attr slog.Attr) []byte {
 	prefix := ""
 
@@ -148,6 +162,7 @@ func (b BaseEncoder) AppendField(dst []byte, attr slog.Attr) []byte {
 	return b.appendField(dst, attr, prefix, b.delimeter)
 }
 
+// AppendKey appends key, quoting a dotted path together with the key.
 func (b BaseEncoder) AppendKey(dst []byte, key string, prefix string) []byte {
 	// A bare group delimiter stays outside the key. A dotted path is part of the key,
 	// so JSON quotes "user.name" instead of writing user."name".
@@ -167,12 +182,14 @@ func (b BaseEncoder) AppendKey(dst []byte, key string, prefix string) []byte {
 	return b.AppendString(dst, key)
 }
 
+// AppendComplex appends c.
 func (b BaseEncoder) AppendComplex(dst []byte, c complex128) []byte {
 	cmplx := strconv.FormatComplex(c, 'g', -1, complex128Bits)
 
 	return b.AppendString(dst, cmplx)
 }
 
+// AppendFloat appends f.
 func (b BaseEncoder) AppendFloat(dst []byte, f float64, bitSize int) []byte {
 	if math.IsNaN(f) || math.IsInf(f, 0) {
 		return b.AppendString(dst, strconv.FormatFloat(f, 'g', -1, bitSize))
@@ -181,22 +198,27 @@ func (b BaseEncoder) AppendFloat(dst []byte, f float64, bitSize int) []byte {
 	return strconv.AppendFloat(dst, f, 'g', -1, bitSize)
 }
 
+// AppendUint appends u in base 10.
 func (b BaseEncoder) AppendUint(dst []byte, u uint64) []byte {
 	return strconv.AppendUint(dst, u, base10)
 }
 
+// AppendNull appends the configured null text.
 func (b BaseEncoder) AppendNull(dst []byte) []byte {
 	return append(dst, b.nullValue...)
 }
 
+// AppendInt appends val in base 10.
 func (b BaseEncoder) AppendInt(dst []byte, val int64) []byte {
 	return strconv.AppendInt(dst, val, base10)
 }
 
+// AppendBool appends val.
 func (b BaseEncoder) AppendBool(dst []byte, val bool) []byte {
 	return strconv.AppendBool(dst, val)
 }
 
+// AppendGroup appends fields wrapped in the group delimiters.
 func (b BaseEncoder) AppendGroup(dst []byte, fields []slog.Attr) []byte {
 	dst = append(dst, b.group.start)
 	dst = b.appendGroup(dst, fields, "")
@@ -204,6 +226,7 @@ func (b BaseEncoder) AppendGroup(dst []byte, fields []slog.Attr) []byte {
 	return append(dst, b.group.end)
 }
 
+// AppendArray appends in wrapped in the array delimiters.
 func (b BaseEncoder) AppendArray(dst []byte, in []slog.Value) []byte {
 	dst = append(dst, b.array.start)
 	if len(in) > 0 {
@@ -216,6 +239,7 @@ func (b BaseEncoder) AppendArray(dst []byte, in []slog.Value) []byte {
 	return append(dst, b.array.end)
 }
 
+// AppendBytes appends in as a quoted string.
 func (b BaseEncoder) AppendBytes(dst, in []byte) []byte {
 	return strconv.AppendQuote(dst, string(in))
 }

@@ -33,7 +33,7 @@ func SetLogger(l Logger) {
 	global = l
 }
 
-// Log return global logger.
+// Log returns the global logger.
 func Log() Logger {
 	return global
 }
@@ -243,6 +243,7 @@ func Panicf(format string, args ...any) {
 	Log().Panicf(format, args...)
 }
 
+// Writer returns an io.Writer that logs to the global logger at level.
 func Writer(ctx context.Context, level level.Level) io.Writer {
 	return Log().Writer(ctx, level)
 }

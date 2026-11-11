@@ -9,6 +9,7 @@ import (
 // list is a JSON/text array. slog has no array kind.
 type list []slog.Value
 
+// StringpValue returns the string, or a nil value when value is nil.
 func StringpValue(value *string) slog.Value {
 	if value == nil {
 		return slog.AnyValue(nil)
@@ -17,14 +18,17 @@ func StringpValue(value *string) slog.Value {
 	return slog.StringValue(*value)
 }
 
+// StringsValue returns a copied string array.
 func StringsValue(value []string) slog.Value {
 	return valuesOf(value, slog.StringValue)
 }
 
+// BoolsValue returns a copied bool array.
 func BoolsValue(values []bool) slog.Value {
 	return valuesOf(values, slog.BoolValue)
 }
 
+// BoolpValue returns the bool, or a nil value when value is nil.
 func BoolpValue(value *bool) slog.Value {
 	if value == nil {
 		return slog.AnyValue(nil)
@@ -33,16 +37,19 @@ func BoolpValue(value *bool) slog.Value {
 	return slog.BoolValue(*value)
 }
 
+// Uint64sValue returns a copied uint64 array.
 func Uint64sValue(values []uint64) slog.Value {
 	return valuesOf(values, slog.Uint64Value)
 }
 
+// Uint8sValue returns a copied array of numbers, not a byte string.
 func Uint8sValue(values []uint8) slog.Value {
 	return valuesOf(values, func(v uint8) slog.Value {
 		return slog.Uint64Value(uint64(v))
 	})
 }
 
+// Uint64pValue returns the uint64, or a nil value when v is nil.
 func Uint64pValue(v *uint64) slog.Value {
 	if v == nil {
 		return slog.AnyValue(nil)
@@ -51,10 +58,12 @@ func Uint64pValue(v *uint64) slog.Value {
 	return slog.Uint64Value(*v)
 }
 
+// Int64sValue returns a copied int64 array.
 func Int64sValue(value []int64) slog.Value {
 	return valuesOf(value, slog.Int64Value)
 }
 
+// Int64pValue returns the int64, or a nil value when value is nil.
 func Int64pValue(value *int64) slog.Value {
 	if value == nil {
 		return slog.AnyValue(nil)
@@ -63,10 +72,12 @@ func Int64pValue(value *int64) slog.Value {
 	return slog.Int64Value(*value)
 }
 
+// Float64sValue returns a copied float64 array.
 func Float64sValue(values []float64) slog.Value {
 	return valuesOf(values, slog.Float64Value)
 }
 
+// Float64pValue returns the float64, or a nil value when v is nil.
 func Float64pValue(v *float64) slog.Value {
 	if v == nil {
 		return slog.AnyValue(nil)
@@ -75,18 +86,21 @@ func Float64pValue(v *float64) slog.Value {
 	return slog.Float64Value(*v)
 }
 
+// Complex64sValue returns a copied complex64 array.
 func Complex64sValue(values []complex64) slog.Value {
 	return valuesOf(values, func(v complex64) slog.Value {
 		return slog.AnyValue(complex128(v))
 	})
 }
 
+// Complex128sValue returns a copied complex128 array.
 func Complex128sValue(values []complex128) slog.Value {
 	return valuesOf(values, func(v complex128) slog.Value {
 		return slog.AnyValue(v)
 	})
 }
 
+// Complex128pValue returns the complex128, or a nil value when v is nil.
 func Complex128pValue(v *complex128) slog.Value {
 	if v == nil {
 		return slog.AnyValue(nil)
@@ -95,6 +109,7 @@ func Complex128pValue(v *complex128) slog.Value {
 	return slog.AnyValue(*v)
 }
 
+// TimepValue returns the time, or a nil value when v is nil.
 func TimepValue(v *time.Time) slog.Value {
 	if v == nil {
 		return slog.AnyValue(nil)
@@ -103,10 +118,12 @@ func TimepValue(v *time.Time) slog.Value {
 	return slog.TimeValue(*v)
 }
 
+// TimesValue returns a copied time array.
 func TimesValue(values []time.Time) slog.Value {
 	return valuesOf(values, slog.TimeValue)
 }
 
+// DurationpValue returns the duration, or a nil value when v is nil.
 func DurationpValue(v *time.Duration) slog.Value {
 	if v == nil {
 		return slog.AnyValue(nil)
@@ -115,16 +132,19 @@ func DurationpValue(v *time.Duration) slog.Value {
 	return slog.DurationValue(*v)
 }
 
+// DurationsValue returns a copied duration array.
 func DurationsValue(values []time.Duration) slog.Value {
 	return valuesOf(values, slog.DurationValue)
 }
 
+// GroupValue returns a group. The attribute slice is copied.
 func GroupValue(as ...slog.Attr) slog.Value {
 	as = append([]slog.Attr(nil), as...)
 
 	return slog.GroupValue(as...)
 }
 
+// ErrorValue returns the error text. A nil error is an empty string.
 func ErrorValue(value error) slog.Value {
 	if value == nil {
 		return slog.StringValue("")
@@ -133,14 +153,17 @@ func ErrorValue(value error) slog.Value {
 	return slog.AnyValue(value)
 }
 
+// ErrorsValue returns a copied array of errors.
 func ErrorsValue(value []error) slog.Value {
 	return valuesOf(value, ErrorValue)
 }
 
+// BytesValue returns a copy of value stored as bytes.
 func BytesValue(value []byte) slog.Value {
 	return slog.AnyValue(copied(value))
 }
 
+// ClosureValue returns a value resolved by calling fn when logged.
 func ClosureValue(fn ClosureFn) slog.Value {
 	return slog.AnyValue(fn)
 }
@@ -242,6 +265,7 @@ func AnyValue(v any) slog.Value {
 	}
 }
 
+// ValueAny resolves val. Groups become maps and arrays become slices.
 func ValueAny(val slog.Value) any {
 	val = val.Resolve()
 	if val.Kind() == slog.KindGroup {
