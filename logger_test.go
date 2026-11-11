@@ -5,6 +5,7 @@ import (
 	"context"
 	"io"
 	"os"
+	"sync"
 	"sync/atomic"
 	"testing"
 
@@ -116,6 +117,28 @@ func TestNilEntry(t *testing.T) {
 	if err != nil || n != 0 || buf.Len() != 0 {
 		t.Fatalf("logger n=%d err=%v buf=%q", n, err, buf)
 	}
+}
+
+func TestNewConcurrentWrite(t *testing.T) {
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	logger := log.New(log.WithWriter(buf))
+
+	var wg sync.WaitGroup
+	for range 8 {
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+
+			for range 40 {
+				logger.Info(context.Background(), "x")
+			}
+		}()
+	}
+
+	wg.Wait()
 }
 
 func TestWithMetrics(t *testing.T) {

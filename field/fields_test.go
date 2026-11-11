@@ -6,6 +6,14 @@ import (
 	"github.com/go-4devs/log/field"
 )
 
+func TestNilErrorString(t *testing.T) {
+	t.Parallel()
+
+	if got := field.Error("err", nil).Value.String(); got != "" {
+		t.Fatalf("got %q", got)
+	}
+}
+
 func TestFields_Append(t *testing.T) {
 	t.Parallel()
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-4devs/log/entry"
 	"github.com/go-4devs/log/field"
+	"github.com/go-4devs/log/level"
 )
 
 func TestEntry_Replace(t *testing.T) {
@@ -38,5 +39,17 @@ func TestEntry_Replace(t *testing.T) {
 
 	if !has {
 		t.Fatal("failed reace value")
+	}
+}
+
+func TestEntryResetLevel(t *testing.T) {
+	t.Parallel()
+
+	ent := entry.New()
+	ent.SetLevel(level.Error)
+	ent.Reset()
+
+	if ent.Level() != level.Debug {
+		t.Fatalf("got %s", ent.Level())
 	}
 }

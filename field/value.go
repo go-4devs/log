@@ -639,7 +639,11 @@ func (v Value) append(dst []byte) []byte {
 	case KindTime:
 		return append(dst, v.AsTime().String()...)
 	case KindError:
-		return append(dst, v.AsError().Error()...)
+		if err := v.AsError(); err != nil {
+			return append(dst, err.Error()...)
+		}
+
+		return dst
 	case KindGroup:
 		return fmt.Append(dst, v.AsGroup())
 	case KindClosure:

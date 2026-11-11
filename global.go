@@ -72,12 +72,12 @@ func Print(args ...any) {
 	Log().Print(args...)
 }
 
-// Fatal log by alert level and arguments.
+// Fatal logs at alert level, then exits.
 func Fatal(args ...any) {
 	Log().Fatal(args...)
 }
 
-// Panic log by emergency level and arguments.
+// Panic logs at emergency level, then panics.
 func Panic(args ...any) {
 	Log().Panic(args...)
 }
@@ -87,12 +87,12 @@ func Println(args ...any) {
 	Log().Println(args...)
 }
 
-// Fatalln log by alert level and arguments.
+// Fatalln logs at alert level, then exits.
 func Fatalln(args ...any) {
 	Log().Fatalln(args...)
 }
 
-// Panicln log by emergency level and arguments.
+// Panicln logs at emergency level, then panics.
 func Panicln(args ...any) {
 	Log().Panicln(args...)
 }
@@ -222,12 +222,12 @@ func Printf(format string, args ...any) {
 	Log().Printf(format, args...)
 }
 
-// Fatalf log by alert level by format and arguments without context.
+// Fatalf logs at alert level, then exits.
 func Fatalf(format string, args ...any) {
 	Log().Fatalf(format, args...)
 }
 
-// Panicf log by emergency level and arguments without context.
+// Panicf logs at emergency level, then panics.
 func Panicf(format string, args ...any) {
 	Log().Panicf(format, args...)
 }

@@ -15,6 +15,9 @@ var _ io.Writer = Logger(nil)
 
 const badKey = "!BADKEY"
 
+//nolint:gochecknoglobals // tests swap this so Fatal does not stop the test process
+var exit = os.Exit
+
 func writeOutput(_ int, err error) {
 	if err != nil {
 		fmt.Fprint(os.Stderr, err)
@@ -78,14 +81,16 @@ func (l Logger) Print(args ...any) {
 	writeOutput(l.writef(context.Background(), level.Info, "", args...))
 }
 
-// Fatal log by alert level and arguments.
+// Fatal logs at alert level, then exits.
 func (l Logger) Fatal(args ...any) {
 	writeOutput(l.writef(context.Background(), level.Alert, "", args...))
+	exit(1)
 }
 
-// Panic log by emergency level and arguments.
+// Panic logs at emergency level, then panics.
 func (l Logger) Panic(args ...any) {
 	writeOutput(l.writef(context.Background(), level.Emergency, "", args...))
+	panic(fmt.Sprint(args...))
 }
 
 // Println log by info level and arguments.
@@ -93,14 +98,16 @@ func (l Logger) Println(args ...any) {
 	writeOutput(l.write(context.Background(), level.Info, fmt.Sprintln(args...)))
 }
 
-// Fatalln log by alert level and arguments.
+// Fatalln logs at alert level, then exits.
 func (l Logger) Fatalln(args ...any) {
 	writeOutput(l.write(context.Background(), level.Alert, fmt.Sprintln(args...)))
+	exit(1)
 }
 
-// Panicln log by emergency level and arguments.
+// Panicln logs at emergency level, then panics.
 func (l Logger) Panicln(args ...any) {
 	writeOutput(l.write(context.Background(), level.Emergency, fmt.Sprintln(args...)))
+	panic(fmt.Sprintln(args...))
 }
 
 // EmergKVs sugared log by emergency level and key-values.
@@ -228,14 +235,16 @@ func (l Logger) Printf(format string, args ...any) {
 	writeOutput(l.writef(context.Background(), level.Info, format, args...))
 }
 
-// Fatalf log by alert level by format and arguments without context.
+// Fatalf logs at alert level, then exits.
 func (l Logger) Fatalf(format string, args ...any) {
 	writeOutput(l.writef(context.Background(), level.Alert, format, args...))
+	exit(1)
 }
 
-// Panicf log by emergency level and arguments without context.
+// Panicf logs at emergency level, then panics.
 func (l Logger) Panicf(format string, args ...any) {
 	writeOutput(l.writef(context.Background(), level.Emergency, format, args...))
+	panic(fmt.Sprintf(format, args...))
 }
 
 func (l Logger) Writer(ctx context.Context, level level.Level, fields ...field.Field) io.Writer {

@@ -24,4 +24,8 @@ jobs:
           args: --verbose
 
       - name: Run go test
-        run: go test ./...
+        run: |
+          go test ./...
+          for dir in handler/zap handler/logrus handler/otel; do
+            (cd "$dir" && go test ./...)
+          done

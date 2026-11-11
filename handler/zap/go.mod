@@ -8,3 +8,5 @@ require (
 )
 
 require go.uber.org/multierr v1.10.0 // indirect
+
+replace github.com/go-4devs/log => ../..

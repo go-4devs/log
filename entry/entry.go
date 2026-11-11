@@ -72,6 +72,7 @@ func (e *Entry) Reset() {
 	e.fields = e.fields[:0]
 	e.args = e.args[:0]
 	e.format = ""
+	e.level = level.Debug
 }
 
 func (e *Entry) Fields() field.Fields {

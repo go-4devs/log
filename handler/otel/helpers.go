@@ -19,9 +19,9 @@ const (
 func levels(lvl level.Level) Level {
 	switch lvl {
 	case level.Emergency:
-		return levelError3
-	case level.Alert:
 		return levelFatal
+	case level.Alert:
+		return levelError3
 	case level.Critical:
 		return levelError2
 	case level.Error:

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sync"
 
 	"github.com/go-4devs/log/entry"
 	"github.com/go-4devs/log/field"
@@ -74,7 +75,12 @@ func New(opts ...func(*option)) Logger {
 		opt(&log)
 	}
 
+	var mu sync.Mutex
+
 	return func(_ context.Context, entry *entry.Entry) (int, error) {
+		mu.Lock()
+		defer mu.Unlock()
+
 		return log.format(log.out, entry)
 	}
 }
@@ -84,24 +90,38 @@ type Encoder interface {
 	AppendField(dst []byte, val field.Field) []byte
 }
 
+type bracketHead struct {
+	timeField   field.Field
+	nameField   field.Field
+	sourceField field.Field
+	hasTime     bool
+	hasName     bool
+	hasSource   bool
+	rest        []field.Field
+}
+
+func bracketHeadFrom(fields field.Fields) bracketHead {
+	var head bracketHead
+
+	fields.Fields(func(item field.Field) bool {
+		switch {
+		case !head.hasTime && item.IsKey(KeyTime):
+			head.timeField, head.hasTime = item, true
+		case !head.hasName && item.IsKey(KeyName):
+			head.nameField, head.hasName = item, true
+		case !head.hasSource && item.IsKey(KeySource):
+			head.sourceField, head.hasSource = item, true
+		case !item.IsKey(KeyTime, KeySource, KeyName, KeyLevel):
+			head.rest = append(head.rest, item)
+		}
+
+		return true
+	})
+
+	return head
+}
+
 func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
-	appendValue := func(buf *buffer.Buffer, data field.Fields, key, prefix, suffix string) *buffer.Buffer {
-		data.Fields(
-			func(f field.Field) bool {
-				if f.IsKey(key) {
-					_, _ = buf.WriteString(prefix)
-					*buf = enc.AppendValue(*buf, f.Value)
-					_, _ = buf.WriteString(suffix)
-
-					return false
-				}
-
-				return true
-			})
-
-		return buf
-	}
-
 	return func(w io.Writer, data *entry.Entry) (int, error) {
 		if data == nil {
 			return 0, nil
@@ -113,22 +133,34 @@ func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 			buf.Free()
 		}()
 
-		fields := data.Fields()
-		buf = appendValue(buf, fields, KeyTime, "", " ")
+		head := bracketHeadFrom(data.Fields())
+
+		if head.hasTime {
+			*buf = enc.AppendValue(*buf, head.timeField.Value)
+			_, _ = buf.WriteString(" ")
+		}
+
 		_, _ = buf.WriteString("[")
 		*buf = enc.AppendValue(*buf, field.StringValue(data.Level().String()))
 		_, _ = buf.WriteString("]")
-		buf = appendValue(buf, fields, KeyName, "[", "]")
-		buf = appendValue(buf, fields, KeySource, " ", " ")
+
+		if head.hasName {
+			_, _ = buf.WriteString("[")
+			*buf = enc.AppendValue(*buf, head.nameField.Value)
+			_, _ = buf.WriteString("]")
+		}
+
+		if head.hasSource {
+			_, _ = buf.WriteString(" ")
+			*buf = enc.AppendValue(*buf, head.sourceField.Value)
+			_, _ = buf.WriteString(" ")
+		}
+
 		*buf = enc.AppendValue(*buf, field.StringValue(data.Message()))
 
-		fields.Fields(func(f field.Field) bool {
-			if !f.IsKey(KeyTime, KeySource, KeyName, KeyLevel) {
-				*buf = enc.AppendField(*buf, f)
-			}
-
-			return true
-		})
+		for _, item := range head.rest {
+			*buf = enc.AppendField(*buf, item)
+		}
 
 		_, _ = buf.WriteString("\n")
 
