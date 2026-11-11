@@ -3,6 +3,8 @@ package level
 import (
 	"encoding"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -16,6 +18,9 @@ var (
 	_ encoding.BinaryMarshaler   = Level(0)
 	_ encoding.BinaryUnmarshaler = (*Level)(nil)
 )
+
+// ErrParse is returned when a level name is not one of the known names.
+var ErrParse = errors.New("parse level")
 
 // Level log.
 type Level uint32
@@ -45,10 +50,11 @@ func (l Level) MarshalJSON() ([]byte, error) {
 }
 
 func (l *Level) UnmarshalJSON(in []byte) error {
-	lvl := Parse(string(in[1 : len(in)-1]))
-	*l = lvl
+	if len(in) < 2 || in[0] != '"' || in[len(in)-1] != '"' {
+		return fmt.Errorf("%w: %q", ErrParse, in)
+	}
 
-	return nil
+	return l.UnmarshalText(in[1 : len(in)-1])
 }
 
 func (l Level) MarshalText() ([]byte, error) {
@@ -56,7 +62,11 @@ func (l Level) MarshalText() ([]byte, error) {
 }
 
 func (l *Level) UnmarshalText(in []byte) error {
-	lvl := Parse(string(in))
+	lvl, err := Parse(string(in))
+	if err != nil {
+		return err
+	}
+
 	*l = lvl
 
 	return nil
@@ -67,29 +77,28 @@ func (l Level) MarshalBinary() ([]byte, error) {
 }
 
 func (l *Level) UnmarshalBinary(in []byte) error {
-	lvl := Parse(string(in))
-	*l = lvl
-
-	return nil
+	return l.UnmarshalText(in)
 }
 
-func Parse(lvl string) Level {
+func Parse(lvl string) (Level, error) {
 	switch strings.ToLower(lvl) {
 	case "debug":
-		return Debug
+		return Debug, nil
 	case "info":
-		return Info
+		return Info, nil
 	case "notice":
-		return Notice
+		return Notice, nil
 	case "warning", "warn":
-		return Warning
+		return Warning, nil
 	case "error", "err":
-		return Error
+		return Error, nil
 	case "critical", "crit":
-		return Critical
+		return Critical, nil
 	case "alert":
-		return Alert
+		return Alert, nil
+	case "emergency", "emerg":
+		return Emergency, nil
 	default:
-		return Emergency
+		return 0, fmt.Errorf("%w: %q", ErrParse, lvl)
 	}
 }

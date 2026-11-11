@@ -1,6 +1,7 @@
 package level_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/go-4devs/log/level"
@@ -62,6 +63,34 @@ func TestUnmarshalJSON(t *testing.T) {
 			if !level.Is(expect) {
 				t.Errorf("%s got: %s expect: %s", actual, level, expect)
 			}
+		}
+	}
+}
+
+func TestParse(t *testing.T) {
+	t.Parallel()
+
+	for _, name := range []string{"emerg", "Emerg", "emergency"} {
+		got, err := level.Parse(name)
+		if err != nil || got != level.Emergency {
+			t.Errorf("%s: got %s err %v", name, got, err)
+		}
+	}
+
+	if _, err := level.Parse("nope"); err == nil {
+		t.Fatal("nope: want error")
+	}
+}
+
+func TestUnmarshalJSONRejects(t *testing.T) {
+	t.Parallel()
+
+	for _, in := range []string{"0", "null", `"nope"`} {
+		lvl := level.Info
+
+		err := json.Unmarshal([]byte(in), &lvl)
+		if err == nil || lvl != level.Info {
+			t.Errorf("%s: err %v level %s", in, err, lvl)
 		}
 	}
 }
