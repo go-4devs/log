@@ -3,6 +3,7 @@ package log
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"runtime"
 	"time"
@@ -12,7 +13,9 @@ import (
 	"github.com/go-4devs/log/level"
 )
 
-// Middleware handle.
+// Middleware handles a log entry and may pass it to handler.
+// After handler returns, the entry may change.
+// Use e.Clone to keep a copy.
 type Middleware func(ctx context.Context, e *entry.Entry, handler Logger) (int, error)
 
 // With add middleware to logger.
@@ -78,20 +81,10 @@ func WithContextValue(keys ...fmt.Stringer) Middleware {
 	}
 }
 
+// WithName sets the logger name, replacing a previous name.
 func WithName(name string) Middleware {
 	return func(ctx context.Context, data *entry.Entry, handler Logger) (int, error) {
-		return handler(ctx, data.Replace(KeyName, field.StringValue(name)))
-	}
-}
-
-// WithCaller adds called file.
-//
-// Deprecated: use WithSource.
-func WithCaller(key string, depth int, full bool) Middleware {
-	const offset = 2
-
-	return func(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
-		return handler(ctx, e.AddString(key, entry.Caller(depth*offset, full)))
+		return handler(ctx, data.Replace(KeyName, slog.StringValue(name)))
 	}
 }
 
@@ -105,7 +98,7 @@ func WithTime(key, format string) Middleware {
 // WithMetrics adds handle metrics.
 func WithMetrics(metrics func(level level.Level)) Middleware {
 	return func(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
-		go metrics(e.Level())
+		metrics(e.Level())
 
 		return handler(ctx, e)
 	}

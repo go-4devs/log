@@ -3,26 +3,37 @@ package log
 import (
 	"context"
 	"io"
+	"log/slog"
 	"time"
 
-	"github.com/go-4devs/log/field"
 	"github.com/go-4devs/log/level"
 )
 
 //nolint:gochecknoglobals
-var global = With(New(),
-	WithTime(KeyTime, time.RFC3339),
-	WithLevel(KeyLevel, level.Debug),
-	WithExit(level.Alert),
-	WithPanic(level.Emergency),
-)
+var global Logger
 
-// SetLogger sets global used logger. This function is not thread-safe.
+//nolint:gochecknoinits // the default logger must exist before any call
+func init() {
+	global = With(New(),
+		WithTime(KeyTime, time.RFC3339),
+		WithLevel(KeyLevel, level.Debug),
+	)
+}
+
+// SetLogger sets the logger used by the package functions.
+// A nil logger is ignored.
+//
+// Warning: SetLogger is not safe for concurrent use.
+// Do not call it while other goroutines are logging.
 func SetLogger(l Logger) {
+	if l == nil {
+		return
+	}
+
 	global = l
 }
 
-// Log return global logger.
+// Log returns the global logger.
 func Log() Logger {
 	return global
 }
@@ -72,12 +83,12 @@ func Print(args ...any) {
 	Log().Print(args...)
 }
 
-// Fatal log by alert level and arguments.
+// Fatal logs at alert level, then exits.
 func Fatal(args ...any) {
 	Log().Fatal(args...)
 }
 
-// Panic log by emergency level and arguments.
+// Panic logs at emergency level, then panics.
 func Panic(args ...any) {
 	Log().Panic(args...)
 }
@@ -87,12 +98,12 @@ func Println(args ...any) {
 	Log().Println(args...)
 }
 
-// Fatalln log by alert level and arguments.
+// Fatalln logs at alert level, then exits.
 func Fatalln(args ...any) {
 	Log().Fatalln(args...)
 }
 
-// Panicln log by emergency level and arguments.
+// Panicln logs at emergency level, then panics.
 func Panicln(args ...any) {
 	Log().Panicln(args...)
 }
@@ -138,42 +149,42 @@ func DebugKVs(ctx context.Context, msg string, args ...any) {
 }
 
 // EmergKV  log by emergency level and key-values.
-func EmergKV(ctx context.Context, msg string, args ...field.Field) {
+func EmergKV(ctx context.Context, msg string, args ...slog.Attr) {
 	Log().EmergKV(ctx, msg, args...)
 }
 
 // AlertKV log by alert level and key-values.
-func AlertKV(ctx context.Context, msg string, args ...field.Field) {
+func AlertKV(ctx context.Context, msg string, args ...slog.Attr) {
 	Log().AlertKV(ctx, msg, args...)
 }
 
 // CritKV log by critical level and key-values.
-func CritKV(ctx context.Context, msg string, args ...field.Field) {
+func CritKV(ctx context.Context, msg string, args ...slog.Attr) {
 	Log().CritKV(ctx, msg, args...)
 }
 
 // ErrKV log by error level and key-values.
-func ErrKV(ctx context.Context, msg string, args ...field.Field) {
+func ErrKV(ctx context.Context, msg string, args ...slog.Attr) {
 	Log().ErrKV(ctx, msg, args...)
 }
 
 // WarnKV log by warning level and key-values.
-func WarnKV(ctx context.Context, msg string, args ...field.Field) {
+func WarnKV(ctx context.Context, msg string, args ...slog.Attr) {
 	Log().WarnKV(ctx, msg, args...)
 }
 
 // NoticeKV log by notice level and key-values.
-func NoticeKV(ctx context.Context, msg string, args ...field.Field) {
+func NoticeKV(ctx context.Context, msg string, args ...slog.Attr) {
 	Log().NoticeKV(ctx, msg, args...)
 }
 
 // InfoKV log by info level and key-values.
-func InfoKV(ctx context.Context, msg string, args ...field.Field) {
+func InfoKV(ctx context.Context, msg string, args ...slog.Attr) {
 	Log().InfoKV(ctx, msg, args...)
 }
 
 // DebugKV log by debug level and key-values.
-func DebugKV(ctx context.Context, msg string, args ...field.Field) {
+func DebugKV(ctx context.Context, msg string, args ...slog.Attr) {
 	Log().DebugKV(ctx, msg, args...)
 }
 
@@ -222,16 +233,17 @@ func Printf(format string, args ...any) {
 	Log().Printf(format, args...)
 }
 
-// Fatalf log by alert level by format and arguments without context.
+// Fatalf logs at alert level, then exits.
 func Fatalf(format string, args ...any) {
 	Log().Fatalf(format, args...)
 }
 
-// Panicf log by emergency level and arguments without context.
+// Panicf logs at emergency level, then panics.
 func Panicf(format string, args ...any) {
 	Log().Panicf(format, args...)
 }
 
+// Writer returns an io.Writer that logs to the global logger at level.
 func Writer(ctx context.Context, level level.Level) io.Writer {
 	return Log().Writer(ctx, level)
 }

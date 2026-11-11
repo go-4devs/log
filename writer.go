@@ -4,37 +4,39 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
+	"reflect"
+	"slices"
+	"sync"
 
 	"github.com/go-4devs/log/entry"
 	"github.com/go-4devs/log/field"
 	"github.com/go-4devs/log/internal/buffer"
 )
 
-// Keys for "built-in" attributes.
+// Keys for built-in attributes.
 const (
-	// KeyTime is the key used by the built-in handlers for the time
-	// when the log method is called. The associated Value is a [time.Time].
+	// KeyTime is the key for the time attribute.
 	KeyTime = "time"
-	// KeyLevel is the key used by the built-in handlers for the level
-	// of the log call. The associated value is a [Level].
+	// KeyLevel is the key for the level name.
 	KeyLevel = "level"
-	// KeyMessage is the key used by the built-in handlers for the
-	// message of the log call. The associated value is a string.
+	// KeyMessage is the key for the log message.
 	KeyMessage = "msg"
-	// KeySource is the key used by the built-in handlers for the source file
-	// and line of the log call. The associated value is a string.
+	// KeySource is the key for the caller location.
 	KeySource = "source"
-	// KeyName logger name.
+	// KeyName is the key for the logger name.
 	KeyName = "name"
 )
 
+// WithWriter sets the output writer.
 func WithWriter(w io.Writer) func(*option) {
 	return func(o *option) {
 		o.out = w
 	}
 }
 
+// WithStdout writes logs to standard output.
 func WithStdout() func(*option) {
 	return func(o *option) {
 		o.out = os.Stdout
@@ -74,34 +76,65 @@ func New(opts ...func(*option)) Logger {
 		opt(&log)
 	}
 
+	mu := mutexFor(log.out)
+
 	return func(_ context.Context, entry *entry.Entry) (int, error) {
+		mu.Lock()
+		defer mu.Unlock()
+
 		return log.format(log.out, entry)
 	}
 }
 
-type Encoder interface {
-	AppendValue(dst []byte, val field.Value) []byte
-	AppendField(dst []byte, val field.Field) []byte
-}
+// shortcut: pointer-writer locks live for the process, drop the map if writers are created per line
+//
+//nolint:gochecknoglobals
+var writerLocks sync.Map
 
-func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
-	appendValue := func(buf *buffer.Buffer, data field.Fields, key, prefix, suffix string) *buffer.Buffer {
-		data.Fields(
-			func(f field.Field) bool {
-				if f.IsKey(key) {
-					_, _ = buf.WriteString(prefix)
-					*buf = enc.AppendValue(*buf, f.Value)
-					_, _ = buf.WriteString(suffix)
+func mutexFor(w io.Writer) *sync.Mutex {
+	value := reflect.ValueOf(w)
+	switch value.Kind() {
+	case reflect.Pointer, reflect.Map, reflect.Chan, reflect.Func, reflect.Slice, reflect.UnsafePointer:
+		key := value.Pointer()
+		if key == 0 {
+			break
+		}
 
-					return false
-				}
+		if found, ok := writerLocks.Load(key); ok {
+			mu, _ := found.(*sync.Mutex)
 
-				return true
-			})
+			return mu
+		}
 
-		return buf
+		created := &sync.Mutex{}
+		actual, _ := writerLocks.LoadOrStore(key, created)
+		mu, _ := actual.(*sync.Mutex)
+
+		return mu
+	default:
 	}
 
+	return &sync.Mutex{}
+}
+
+// Encoder appends one attribute or value.
+type Encoder interface {
+	AppendValue(dst []byte, val slog.Value) []byte
+	AppendField(dst []byte, val slog.Attr) []byte
+}
+
+type bracketHead struct {
+	timeField   slog.Attr
+	nameField   slog.Attr
+	sourceField slog.Attr
+	hasTime     bool
+	hasName     bool
+	hasSource   bool
+	rest        []slog.Attr
+}
+
+// FormatWithBracket writes the level and message in a bracket layout.
+func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 	return func(w io.Writer, data *entry.Entry) (int, error) {
 		buf := buffer.New()
 
@@ -109,22 +142,34 @@ func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 			buf.Free()
 		}()
 
-		fields := data.Fields()
-		buf = appendValue(buf, fields, KeyTime, "", " ")
+		head := bracketHeadFrom(data.Fields())
+
+		if head.hasTime {
+			*buf = enc.AppendValue(*buf, head.timeField.Value)
+			_, _ = buf.WriteString(" ")
+		}
+
 		_, _ = buf.WriteString("[")
-		*buf = enc.AppendValue(*buf, field.StringValue(data.Level().String()))
+		*buf = enc.AppendValue(*buf, slog.StringValue(data.Level().String()))
 		_, _ = buf.WriteString("]")
-		buf = appendValue(buf, fields, KeyName, "[", "]")
-		buf = appendValue(buf, fields, KeySource, " ", " ")
-		*buf = enc.AppendValue(*buf, field.StringValue(data.Message()))
 
-		fields.Fields(func(f field.Field) bool {
-			if !f.IsKey(KeyTime, KeySource, KeyName, KeyLevel) {
-				*buf = enc.AppendField(*buf, f)
-			}
+		if head.hasName {
+			_, _ = buf.WriteString("[")
+			*buf = enc.AppendValue(*buf, head.nameField.Value)
+			_, _ = buf.WriteString("]")
+		}
 
-			return true
-		})
+		if head.hasSource {
+			_, _ = buf.WriteString(" ")
+			*buf = enc.AppendValue(*buf, head.sourceField.Value)
+			_, _ = buf.WriteString(" ")
+		}
+
+		*buf = enc.AppendValue(*buf, slog.StringValue(data.Message()))
+
+		for _, item := range head.rest {
+			*buf = enc.AppendField(*buf, item)
+		}
 
 		_, _ = buf.WriteString("\n")
 
@@ -137,6 +182,7 @@ func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 	}
 }
 
+// FormatString writes the message and attributes as text.
 func FormatString(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 	return func(w io.Writer, entry *entry.Entry) (int, error) {
 		buf := buffer.New()
@@ -162,6 +208,7 @@ func FormatString(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 	}
 }
 
+// FormatJSON writes one JSON object.
 func FormatJSON(enc Encoder) func(w io.Writer, entry *entry.Entry) (int, error) {
 	return func(w io.Writer, entry *entry.Entry) (int, error) {
 		buf := buffer.New()
@@ -187,4 +234,27 @@ func FormatJSON(enc Encoder) func(w io.Writer, entry *entry.Entry) (int, error) 
 
 		return n, nil
 	}
+}
+
+func isKey(key string, keys ...string) bool {
+	return slices.Contains(keys, key)
+}
+
+func bracketHeadFrom(fields []slog.Attr) bracketHead {
+	var head bracketHead
+
+	for _, item := range fields {
+		switch {
+		case !head.hasTime && item.Key == KeyTime:
+			head.timeField, head.hasTime = item, true
+		case !head.hasName && item.Key == KeyName:
+			head.nameField, head.hasName = item, true
+		case !head.hasSource && item.Key == KeySource:
+			head.sourceField, head.hasSource = item, true
+		case !isKey(item.Key, KeyTime, KeySource, KeyName, KeyLevel):
+			head.rest = append(head.rest, item)
+		}
+	}
+
+	return head
 }

@@ -3,6 +3,7 @@ package log
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -13,6 +14,7 @@ import (
 
 const funcName = "Logger"
 
+// WithSource adds the first caller outside this module as a source attribute.
 func WithSource(items int, trimPath func(string) string) Middleware {
 	const (
 		skip    = 4
@@ -22,6 +24,7 @@ func WithSource(items int, trimPath func(string) string) Middleware {
 	return WithCallers(items, skip, pkgName, trimPath)
 }
 
+// WithCallers adds the first caller outside logPkg as a source attribute.
 func WithCallers(items, skip int, logPkg string, trimPath func(string) string) Middleware {
 	items += skip
 	skipHelper := logPkg + "."
@@ -66,6 +69,7 @@ func WithCallers(items, skip int, logPkg string, trimPath func(string) string) M
 	}
 }
 
+// TrimPath returns the last two path elements of file.
 func TrimPath(file string) string {
 	idx := strings.LastIndexByte(file, '/')
 	if idx == -1 {
@@ -88,14 +92,16 @@ type Source struct {
 	Line int    `json:"line"`
 }
 
+// MarshalText encodes the source as file:line.
 func (l Source) MarshalText() ([]byte, error) {
 	return fmt.Appendf(nil, "%s:%d", l.File, l.Line), nil
 }
 
+// MarshalJSON encodes the file, line, and function.
 func (l Source) MarshalJSON() ([]byte, error) {
-	return fmt.Appendf([]byte{}, `{"file":%q,"line":%d,"func":"%s"}`, l.File, l.Line, l.Func), nil
+	return fmt.Appendf(nil, `{"file":%q,"line":%d,"func":%q}`, l.File, l.Line, l.Func), nil
 }
 
-func errSourceField(skip, mframe int) field.Field {
+func errSourceField(skip, mframe int) slog.Attr {
 	return field.String(KeySource, fmt.Sprintf("source not found by frames[%d:%d]", skip, mframe))
 }

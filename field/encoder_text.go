@@ -3,13 +3,15 @@ package field
 import (
 	"encoding"
 	"fmt"
+	"log/slog"
 )
 
+// NewEncoderText returns an encoder that writes space-separated text fields.
 func NewEncoderText(opts ...func(*BaseEncoder)) BaseEncoder {
 	opts = append([]func(*BaseEncoder){
 		WithGroupConfig(0, 0, ' '),
 		WithNullValue("<nil>"),
-		WithDefaultValue(func(dst []byte, enc Encoder, val Value) []byte {
+		WithDefaultValue(func(dst []byte, enc Encoder, val slog.Value) []byte {
 			switch value := val.Any().(type) {
 			case encoding.TextMarshaler:
 				data, err := value.MarshalText()
@@ -17,7 +19,7 @@ func NewEncoderText(opts ...func(*BaseEncoder)) BaseEncoder {
 					return enc.AppendValue(dst, ErrorValue(err))
 				}
 
-				return enc.AppendValue(dst, StringValue(string(data)))
+				return enc.AppendValue(dst, slog.StringValue(string(data)))
 			default:
 				return fmt.Appendf(dst, "%+v", val.Any())
 			}

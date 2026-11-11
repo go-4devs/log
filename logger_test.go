@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"os"
+	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 
@@ -88,6 +90,54 @@ func TestWriter(t *testing.T) {
 	}
 }
 
+func TestNewConcurrentWrite(t *testing.T) {
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	logger := log.New(log.WithWriter(buf))
+
+	var wg sync.WaitGroup
+	for range 8 {
+		wg.Go(func() {
+			for range 40 {
+				logger.Info(context.Background(), "x")
+			}
+		})
+	}
+
+	wg.Wait()
+}
+
+func TestWithMetrics(t *testing.T) {
+	t.Parallel()
+
+	var got level.Level
+
+	logger := log.With(
+		func(_ context.Context, e *entry.Entry) (int, error) {
+			if got != level.Error {
+				t.Errorf("metrics saw %s before handler, want error", got)
+			}
+
+			e.SetLevel(level.Debug)
+
+			return 0, nil
+		},
+		log.WithMetrics(func(lvl level.Level) {
+			got = lvl
+		}),
+	)
+
+	_, err := logger(context.Background(), entry.New().SetLevel(level.Error))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got != level.Error {
+		t.Errorf("got %s, want error", got)
+	}
+}
+
 func TestLogger(t *testing.T) {
 	t.Parallel()
 
@@ -95,16 +145,7 @@ func TestLogger(t *testing.T) {
 	buf := &bytes.Buffer{}
 	logger := log.New(log.WithWriter(buf)).With(log.WithContextValue(requestID), log.WithLevel(log.KeyLevel, level.Info))
 
-	_, err := logger(ctx, nil)
-	if err != nil {
-		t.Fatalf("expected <nil> err, got: %v", err)
-	}
-
-	if buf.String() != "" {
-		t.Errorf("invalid value\n got:%+v\n exp:\"\"", buf)
-	}
-
-	_, err = logger(ctx, entry.New().SetLevel(level.Error))
+	_, err := logger(ctx, entry.New().SetLevel(level.Error))
 	if err != nil {
 		t.Fatalf("expected <nil> err, got: %v", err)
 	}
@@ -113,5 +154,107 @@ func TestLogger(t *testing.T) {
 
 	if buf.String() != success {
 		t.Errorf("invalid value\n got:%+v\n exp:%+v", buf, success)
+	}
+}
+
+func TestHandlerSeesMessageDuringCall(t *testing.T) {
+	t.Parallel()
+
+	var got []string
+
+	logger := log.Logger(func(_ context.Context, item *entry.Entry) (int, error) {
+		got = append(got, item.Message())
+
+		return 0, nil
+	})
+
+	logger.Info(context.Background(), "one")
+	logger.Info(context.Background(), "two")
+
+	if len(got) != 2 || got[0] != "one" || got[1] != "two" {
+		t.Fatalf("%q", got)
+	}
+}
+
+func TestPaniclnPanicsTrimmedMessage(t *testing.T) {
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	logger := log.New(log.WithWriter(buf))
+
+	defer func() {
+		if recover() != "hello there" || buf.String() != "msg=\"hello there\"\n" {
+			t.Fatalf("panic log %q", buf.String())
+		}
+	}()
+
+	logger.Panicln("hello", "there")
+	t.Fatal("did not panic")
+}
+
+func TestPrintlnHasNoTrailingNewline(t *testing.T) {
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	log.New(log.WithWriter(buf)).Println("hello", "there")
+
+	if buf.String() != "msg=\"hello there\"\n" {
+		t.Fatalf("got %q", buf.String())
+	}
+}
+
+func TestTwoLoggersShareWriter(t *testing.T) {
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	left := log.New(log.WithWriter(buf))
+	right := log.New(log.WithWriter(buf))
+
+	var wg sync.WaitGroup
+
+	const lines = 40
+
+	wg.Add(lines * 2)
+
+	for range lines {
+		go func() {
+			defer wg.Done()
+
+			left.Info(context.Background(), "aaaaaaaa")
+		}()
+		go func() {
+			defer wg.Done()
+
+			right.Info(context.Background(), "bbbbbbbb")
+		}()
+	}
+
+	wg.Wait()
+
+	for line := range bytes.SplitSeq(bytes.TrimSuffix(buf.Bytes(), []byte("\n")), []byte("\n")) {
+		if bytes.Contains(line, []byte("aaaaaaaa")) && bytes.Contains(line, []byte("bbbbbbbb")) {
+			t.Fatalf("torn %q", line)
+		}
+	}
+}
+
+//nolint:paralleltest // replaces the process logger
+func TestGlobalSevereLevelsDoNotStop(t *testing.T) {
+	previous := log.Log()
+	buf := &bytes.Buffer{}
+
+	log.SetLogger(log.New(log.WithWriter(buf)))
+	t.Cleanup(func() { log.SetLogger(previous) })
+
+	log.Emerg(context.Background(), "disk")
+	log.Alert(context.Background(), "notice")
+	log.SetLogger(nil)
+	log.Info(context.Background(), "kept")
+
+	got := buf.String()
+	for _, part := range []string{"disk", "notice", "kept"} {
+		if !strings.Contains(got, part) {
+			t.Fatalf("%q missing %s", got, part)
+		}
 	}
 }

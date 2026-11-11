@@ -1,11 +1,11 @@
 package field
 
-type LogValuer interface {
-	LogValue() any
-}
+import "log/slog"
 
+// ClosureFn is a function resolved when the attribute is logged.
 type ClosureFn func() any
 
-func (v ClosureFn) LogValue() any {
-	return v()
+// LogValue resolves the closure.
+func (v ClosureFn) LogValue() slog.Value {
+	return AnyValue(v())
 }

@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
+	"strings"
 
-	"github.com/go-4devs/log/entry"
-	"github.com/go-4devs/log/field"
+	logentry "github.com/go-4devs/log/entry"
+	"github.com/go-4devs/log/internal/entry"
 	"github.com/go-4devs/log/level"
 )
 
@@ -15,15 +17,11 @@ var _ io.Writer = Logger(nil)
 
 const badKey = "!BADKEY"
 
-func writeOutput(_ int, err error) {
-	if err != nil {
-		fmt.Fprint(os.Stderr, err)
-	}
-}
+// Logger handles one log entry.
+// The entry may be changed or reused after Logger returns. Use entry.Entry.Clone to keep a copy.
+type Logger func(ctx context.Context, entry *logentry.Entry) (int, error)
 
-// Logger logged message.
-type Logger func(ctx context.Context, entry *entry.Entry) (int, error)
-
+// Write logs in as an info message.
 func (l Logger) Write(in []byte) (int, error) {
 	return l.write(context.Background(), level.Info, string(in))
 }
@@ -78,29 +76,34 @@ func (l Logger) Print(args ...any) {
 	writeOutput(l.writef(context.Background(), level.Info, "", args...))
 }
 
-// Fatal log by alert level and arguments.
+// Fatal logs at alert level, then exits.
 func (l Logger) Fatal(args ...any) {
 	writeOutput(l.writef(context.Background(), level.Alert, "", args...))
+	os.Exit(1)
 }
 
-// Panic log by emergency level and arguments.
+// Panic logs at emergency level, then panics.
 func (l Logger) Panic(args ...any) {
 	writeOutput(l.writef(context.Background(), level.Emergency, "", args...))
+	panic(fmt.Sprint(args...))
 }
 
 // Println log by info level and arguments.
 func (l Logger) Println(args ...any) {
-	writeOutput(l.write(context.Background(), level.Info, fmt.Sprintln(args...)))
+	writeOutput(l.write(context.Background(), level.Info, strings.TrimSuffix(fmt.Sprintln(args...), "\n")))
 }
 
-// Fatalln log by alert level and arguments.
+// Fatalln logs at alert level, then exits.
 func (l Logger) Fatalln(args ...any) {
-	writeOutput(l.write(context.Background(), level.Alert, fmt.Sprintln(args...)))
+	writeOutput(l.write(context.Background(), level.Alert, strings.TrimSuffix(fmt.Sprintln(args...), "\n")))
+	os.Exit(1)
 }
 
-// Panicln log by emergency level and arguments.
+// Panicln logs at emergency level, then panics.
 func (l Logger) Panicln(args ...any) {
-	writeOutput(l.write(context.Background(), level.Emergency, fmt.Sprintln(args...)))
+	msg := strings.TrimSuffix(fmt.Sprintln(args...), "\n")
+	writeOutput(l.write(context.Background(), level.Emergency, msg))
+	panic(msg)
 }
 
 // EmergKVs sugared log by emergency level and key-values.
@@ -144,42 +147,42 @@ func (l Logger) DebugKVs(ctx context.Context, msg string, args ...any) {
 }
 
 // EmergKV log by emergency level and key-values.
-func (l Logger) EmergKV(ctx context.Context, msg string, args ...field.Field) {
+func (l Logger) EmergKV(ctx context.Context, msg string, args ...slog.Attr) {
 	writeOutput(l.write(ctx, level.Emergency, msg, args...))
 }
 
 // AlertKV log by alert level and key-values.
-func (l Logger) AlertKV(ctx context.Context, msg string, args ...field.Field) {
+func (l Logger) AlertKV(ctx context.Context, msg string, args ...slog.Attr) {
 	writeOutput(l.write(ctx, level.Alert, msg, args...))
 }
 
 // CritKV log by critical level and key-values.
-func (l Logger) CritKV(ctx context.Context, msg string, args ...field.Field) {
+func (l Logger) CritKV(ctx context.Context, msg string, args ...slog.Attr) {
 	writeOutput(l.write(ctx, level.Critical, msg, args...))
 }
 
 // ErrKV log by error level and key-values.
-func (l Logger) ErrKV(ctx context.Context, msg string, args ...field.Field) {
+func (l Logger) ErrKV(ctx context.Context, msg string, args ...slog.Attr) {
 	writeOutput(l.write(ctx, level.Error, msg, args...))
 }
 
 // WarnKV log by warning level and key-values.
-func (l Logger) WarnKV(ctx context.Context, msg string, args ...field.Field) {
+func (l Logger) WarnKV(ctx context.Context, msg string, args ...slog.Attr) {
 	writeOutput(l.write(ctx, level.Warning, msg, args...))
 }
 
 // NoticeKV log by notice level and key-values.
-func (l Logger) NoticeKV(ctx context.Context, msg string, args ...field.Field) {
+func (l Logger) NoticeKV(ctx context.Context, msg string, args ...slog.Attr) {
 	writeOutput(l.write(ctx, level.Notice, msg, args...))
 }
 
 // InfoKV log by info level and key-values.
-func (l Logger) InfoKV(ctx context.Context, msg string, args ...field.Field) {
+func (l Logger) InfoKV(ctx context.Context, msg string, args ...slog.Attr) {
 	writeOutput(l.write(ctx, level.Info, msg, args...))
 }
 
 // DebugKV log by debug level and key-values.
-func (l Logger) DebugKV(ctx context.Context, msg string, args ...field.Field) {
+func (l Logger) DebugKV(ctx context.Context, msg string, args ...slog.Attr) {
 	writeOutput(l.write(ctx, level.Debug, msg, args...))
 }
 
@@ -228,17 +231,20 @@ func (l Logger) Printf(format string, args ...any) {
 	writeOutput(l.writef(context.Background(), level.Info, format, args...))
 }
 
-// Fatalf log by alert level by format and arguments without context.
+// Fatalf logs at alert level, then exits.
 func (l Logger) Fatalf(format string, args ...any) {
 	writeOutput(l.writef(context.Background(), level.Alert, format, args...))
+	os.Exit(1)
 }
 
-// Panicf log by emergency level and arguments without context.
+// Panicf logs at emergency level, then panics.
 func (l Logger) Panicf(format string, args ...any) {
 	writeOutput(l.writef(context.Background(), level.Emergency, format, args...))
+	panic(fmt.Sprintf(format, args...))
 }
 
-func (l Logger) Writer(ctx context.Context, level level.Level, fields ...field.Field) io.Writer {
+// Writer returns an io.Writer that logs at level with fields.
+func (l Logger) Writer(ctx context.Context, level level.Level, fields ...slog.Attr) io.Writer {
 	return writer{
 		ctx:    ctx,
 		level:  level,
@@ -247,16 +253,64 @@ func (l Logger) Writer(ctx context.Context, level level.Level, fields ...field.F
 	}
 }
 
+//nolint:containedctx
+type writer struct {
+	Logger
+
+	ctx    context.Context
+	level  level.Level
+	fields []slog.Attr
+}
+
+// WithLevel returns a copy that logs at level.
+func (w writer) WithLevel(level level.Level) writer {
+	return writer{
+		level:  level,
+		Logger: w.Logger,
+		ctx:    w.ctx,
+		fields: w.fields,
+	}
+}
+
+// WithContext returns a copy that logs with ctx.
+func (w writer) WithContext(ctx context.Context) writer {
+	return writer{
+		level:  w.level,
+		Logger: w.Logger,
+		ctx:    ctx,
+		fields: w.fields,
+	}
+}
+
+// WithFields returns a copy that adds fields to each write.
+func (w writer) WithFields(fields ...slog.Attr) writer {
+	return writer{
+		level:  w.level,
+		Logger: w.Logger,
+		ctx:    w.ctx,
+		fields: fields,
+	}
+}
+
+// Write logs in at the writer level.
+func (w writer) Write(in []byte) (int, error) {
+	return w.write(w.ctx, w.level, string(in), w.fields...)
+}
+
+func writeOutput(_ int, err error) {
+	if err != nil {
+		fmt.Fprint(os.Stderr, err)
+	}
+}
+
 func (l Logger) writekvs(ctx context.Context, lvl level.Level, mst string, args []any) (int, error) {
 	data := entry.Get()
-	data = data.SetMessage(mst).SetLevel(lvl)
+	defer entry.Put(data)
 
-	defer func() {
-		entry.Put(data)
-	}()
+	data.SetMessage(mst).SetLevel(lvl)
 
 	for i := 0; i < len(args); i++ {
-		if f, ok := args[i].(field.Field); ok {
+		if f, ok := args[i].(slog.Attr); ok {
 			data = data.Add(f)
 
 			continue
@@ -282,62 +336,16 @@ func (l Logger) writekvs(ctx context.Context, lvl level.Level, mst string, args 
 	return l(ctx, data)
 }
 
-func (l Logger) write(ctx context.Context, level level.Level, msg string, fields ...field.Field) (int, error) {
+func (l Logger) write(ctx context.Context, level level.Level, msg string, fields ...slog.Attr) (int, error) {
 	data := entry.Get()
-
-	defer func() {
-		entry.Put(data)
-	}()
+	defer entry.Put(data)
 
 	return l(ctx, data.SetLevel(level).SetMessage(msg).Add(fields...))
 }
 
 func (l Logger) writef(ctx context.Context, level level.Level, format string, args ...any) (int, error) {
 	data := entry.Get()
-
-	defer func() {
-		entry.Put(data)
-	}()
+	defer entry.Put(data)
 
 	return l(ctx, data.SetLevel(level).SetMessagef(format, args...))
-}
-
-//nolint:containedctx
-type writer struct {
-	Logger
-
-	ctx    context.Context
-	level  level.Level
-	fields []field.Field
-}
-
-func (w writer) WithLevel(level level.Level) writer {
-	return writer{
-		level:  level,
-		Logger: w.Logger,
-		ctx:    w.ctx,
-		fields: w.fields,
-	}
-}
-
-func (w writer) WithContext(ctx context.Context) writer {
-	return writer{
-		level:  w.level,
-		Logger: w.Logger,
-		ctx:    ctx,
-		fields: w.fields,
-	}
-}
-
-func (w writer) WithFields(fields ...field.Field) writer {
-	return writer{
-		level:  w.level,
-		Logger: w.Logger,
-		ctx:    w.ctx,
-		fields: fields,
-	}
-}
-
-func (w writer) Write(in []byte) (int, error) {
-	return w.write(w.ctx, w.level, string(in), w.fields...)
 }
