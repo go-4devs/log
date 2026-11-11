@@ -2,6 +2,7 @@ package field
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"time"
 	"unicode"
@@ -186,6 +187,10 @@ func (b BaseEncoder) AppendComplex(dst []byte, c complex128) []byte {
 }
 
 func (b BaseEncoder) AppendFloat(dst []byte, f float64, bitSize int) []byte {
+	if math.IsNaN(f) || math.IsInf(f, 0) {
+		return b.AppendString(dst, strconv.FormatFloat(f, 'g', -1, bitSize))
+	}
+
 	return strconv.AppendFloat(dst, f, 'g', -1, bitSize)
 }
 
@@ -227,10 +232,7 @@ func (b BaseEncoder) AppendArray(dst []byte, in []Value) []byte {
 }
 
 func (b BaseEncoder) AppendBytes(dst, in []byte) []byte {
-	dst = append(dst, '"')
-	dst = append(dst, in...)
-
-	return append(dst, '"')
+	return strconv.AppendQuote(dst, string(in))
 }
 
 func (b BaseEncoder) appendGroup(dst []byte, fields []Field, prefix string) []byte {
