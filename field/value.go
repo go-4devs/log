@@ -552,19 +552,19 @@ func (v Value) AsArray() Values {
 // append appends a text representation of v to dst.
 // v is formatted as with fmt.Sprint.
 //
-//nolint:mnd,cyclop
+//nolint:cyclop
 func (v Value) append(dst []byte) []byte {
 	switch v.Kind {
 	case KindString:
 		return append(dst, v.AsString()...)
 	case KindInt64:
-		return strconv.AppendInt(dst, v.inum, 10)
+		return strconv.AppendInt(dst, v.inum, base10)
 	case KindUint64:
-		return strconv.AppendUint(dst, v.num, 10)
+		return strconv.AppendUint(dst, v.num, base10)
 	case KindFloat64:
-		return strconv.AppendFloat(dst, v.AsFloat64(), 'g', -1, 64)
+		return strconv.AppendFloat(dst, v.AsFloat64(), 'g', -1, float64Bits)
 	case KindFloat32:
-		return strconv.AppendFloat(dst, float64(v.AsFloat32()), 'g', -1, 32)
+		return strconv.AppendFloat(dst, float64(v.AsFloat32()), 'g', -1, float32Bits)
 	case KindBool:
 		return strconv.AppendBool(dst, v.AsBool())
 	case KindDuration:

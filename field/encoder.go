@@ -9,6 +9,14 @@ import (
 	"unicode/utf8"
 )
 
+const (
+	base10 = 10
+
+	float32Bits    = 32
+	float64Bits    = 64
+	complex128Bits = 128
+)
+
 type Encoder interface {
 	AppendField(dst []byte, field Field) []byte
 	AppendValue(dst []byte, val Value) []byte
@@ -148,9 +156,8 @@ func (b BaseEncoder) AppendKey(dst []byte, key string, prefix string) []byte {
 	return b.AppendString(dst, key)
 }
 
-//nolint:mnd
 func (b BaseEncoder) AppendComplex(dst []byte, c complex128) []byte {
-	cmplx := strconv.FormatComplex(c, 'g', -1, 128)
+	cmplx := strconv.FormatComplex(c, 'g', -1, complex128Bits)
 
 	return b.AppendString(dst, cmplx)
 }
@@ -163,18 +170,16 @@ func (b BaseEncoder) AppendFloat(dst []byte, f float64, bitSize int) []byte {
 	return strconv.AppendFloat(dst, f, 'g', -1, bitSize)
 }
 
-//nolint:mnd
 func (b BaseEncoder) AppendUint(dst []byte, u uint64) []byte {
-	return strconv.AppendUint(dst, u, 10)
+	return strconv.AppendUint(dst, u, base10)
 }
 
 func (b BaseEncoder) AppendNull(dst []byte) []byte {
 	return append(dst, b.nullValue...)
 }
 
-//nolint:mnd
 func (b BaseEncoder) AppendInt(dst []byte, val int64) []byte {
-	return strconv.AppendInt(dst, val, 10)
+	return strconv.AppendInt(dst, val, base10)
 }
 
 func (b BaseEncoder) AppendBool(dst []byte, val bool) []byte {
@@ -221,7 +226,7 @@ func (b BaseEncoder) appendField(dst []byte, field Field, prefix string, deli by
 	return b.appendValue(dst, field.Value, field.Key+".", deli)
 }
 
-//nolint:mnd,cyclop
+//nolint:cyclop
 func (b BaseEncoder) appendValue(dst []byte, val Value, prefix string, deli byte) []byte {
 	switch val.Kind {
 	case KindGroup:
@@ -241,9 +246,9 @@ func (b BaseEncoder) appendValue(dst []byte, val Value, prefix string, deli byte
 	case KindInt64:
 		return b.AppendInt(b.AppendDelimiter(dst, deli), val.AsInt64())
 	case KindFloat32:
-		return b.AppendFloat(b.AppendDelimiter(dst, deli), float64(val.AsFloat32()), 32)
+		return b.AppendFloat(b.AppendDelimiter(dst, deli), float64(val.AsFloat32()), float32Bits)
 	case KindFloat64:
-		return b.AppendFloat(b.AppendDelimiter(dst, deli), val.AsFloat64(), 64)
+		return b.AppendFloat(b.AppendDelimiter(dst, deli), val.AsFloat64(), float64Bits)
 	case KindUint64:
 		return b.AppendUint(b.AppendDelimiter(dst, deli), val.AsUint64())
 	case KindError:
