@@ -2,12 +2,14 @@ package zap
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-4devs/log"
 	"github.com/go-4devs/log/entry"
 	"github.com/go-4devs/log/field"
 	"github.com/go-4devs/log/level"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // Deprecated: delete after 0.7.0
@@ -52,9 +54,9 @@ func New(logger *zap.Logger) log.Logger {
 
 		switch data.Level() {
 		case level.Emergency:
-			logger.Fatal(data.Message(), zf...)
+			logAt(logger, zapcore.PanicLevel, data.Message(), zf)
 		case level.Alert:
-			logger.Panic(data.Message(), zf...)
+			logAt(logger, zapcore.FatalLevel, data.Message(), zf)
 		case level.Critical, level.Error:
 			logger.Error(data.Message(), zf...)
 		case level.Warning:
@@ -66,5 +68,18 @@ func New(logger *zap.Logger) log.Logger {
 		}
 
 		return 0, nil
+	}
+}
+
+// logAt writes at lvl without zap's panic or exit hooks.
+func logAt(logger *zap.Logger, lvl zapcore.Level, msg string, fields []zap.Field) {
+	ce := logger.Core().Check(zapcore.Entry{
+		LoggerName: logger.Name(),
+		Time:       time.Now(),
+		Level:      lvl,
+		Message:    msg,
+	}, nil)
+	if ce != nil {
+		ce.Write(fields...)
 	}
 }
