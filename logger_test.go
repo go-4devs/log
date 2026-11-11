@@ -3,6 +3,7 @@ package log_test
 import (
 	"bytes"
 	"context"
+	"io"
 	"os"
 	"sync/atomic"
 	"testing"
@@ -85,6 +86,35 @@ func TestWriter(t *testing.T) {
 
 	if buf.String() != "" {
 		t.Errorf("invalid value\n got:%s\n exp:%s", buf, success)
+	}
+}
+
+func TestNilEntry(t *testing.T) {
+	t.Parallel()
+
+	if (*entry.Entry)(nil).Message() != "" {
+		t.Fatal("nil message")
+	}
+
+	buf := &bytes.Buffer{}
+	formats := []func(io.Writer, *entry.Entry) (int, error){
+		log.FormatString(field.NewEncoderText()),
+		log.FormatJSON(field.NewEncoderJSON()),
+		log.FormatWithBracket(field.NewEncoderText()),
+	}
+
+	for _, format := range formats {
+		buf.Reset()
+
+		n, err := format(buf, nil)
+		if err != nil || n != 0 || buf.Len() != 0 {
+			t.Fatalf("n=%d err=%v buf=%q", n, err, buf)
+		}
+	}
+
+	n, err := log.New(log.WithWriter(buf))(context.Background(), nil)
+	if err != nil || n != 0 || buf.Len() != 0 {
+		t.Fatalf("logger n=%d err=%v buf=%q", n, err, buf)
 	}
 }
 

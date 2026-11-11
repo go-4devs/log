@@ -103,6 +103,10 @@ func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 	}
 
 	return func(w io.Writer, data *entry.Entry) (int, error) {
+		if data == nil {
+			return 0, nil
+		}
+
 		buf := buffer.New()
 
 		defer func() {
@@ -139,6 +143,10 @@ func FormatWithBracket(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 
 func FormatString(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 	return func(w io.Writer, entry *entry.Entry) (int, error) {
+		if entry == nil {
+			return 0, nil
+		}
+
 		buf := buffer.New()
 
 		defer func() {
@@ -164,6 +172,10 @@ func FormatString(enc Encoder) func(io.Writer, *entry.Entry) (int, error) {
 
 func FormatJSON(enc Encoder) func(w io.Writer, entry *entry.Entry) (int, error) {
 	return func(w io.Writer, entry *entry.Entry) (int, error) {
+		if entry == nil {
+			return 0, nil
+		}
+
 		buf := buffer.New()
 
 		defer func() {

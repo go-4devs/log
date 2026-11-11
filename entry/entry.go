@@ -95,6 +95,10 @@ func (e *Entry) String() string {
 }
 
 func (e *Entry) Message() string {
+	if e == nil {
+		return ""
+	}
+
 	switch {
 	case len(e.args) > 0 && e.format != "":
 		return fmt.Sprintf(e.format, e.args...)
