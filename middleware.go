@@ -105,7 +105,7 @@ func WithTime(key, format string) Middleware {
 // WithMetrics adds handle metrics.
 func WithMetrics(metrics func(level level.Level)) Middleware {
 	return func(ctx context.Context, e *entry.Entry, handler Logger) (int, error) {
-		go metrics(e.Level())
+		metrics(e.Level())
 
 		return handler(ctx, e)
 	}

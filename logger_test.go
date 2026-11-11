@@ -88,6 +88,36 @@ func TestWriter(t *testing.T) {
 	}
 }
 
+func TestWithMetrics(t *testing.T) {
+	t.Parallel()
+
+	var got level.Level
+
+	logger := log.With(
+		func(_ context.Context, e *entry.Entry) (int, error) {
+			if got != level.Error {
+				t.Errorf("metrics saw %s before handler, want error", got)
+			}
+
+			e.SetLevel(level.Debug)
+
+			return 0, nil
+		},
+		log.WithMetrics(func(lvl level.Level) {
+			got = lvl
+		}),
+	)
+
+	_, err := logger(context.Background(), entry.New().SetLevel(level.Error))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got != level.Error {
+		t.Errorf("got %s, want error", got)
+	}
+}
+
 func TestLogger(t *testing.T) {
 	t.Parallel()
 
