@@ -9,12 +9,15 @@ var pool = sync.Pool{
 	},
 }
 
-//nolint:forcetypeassert
 func Get() *Entry {
-	e := pool.Get().(*Entry)
-	e.Reset()
+	entry, ok := pool.Get().(*Entry)
+	if !ok {
+		entry = New()
+	}
 
-	return e
+	entry.Reset()
+
+	return entry
 }
 
 func Put(e *Entry) {

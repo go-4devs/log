@@ -17,9 +17,15 @@ var bufPool = sync.Pool{
 	},
 }
 
-//nolint:forcetypeassert
 func New() *Buffer {
-	return bufPool.Get().(*Buffer)
+	buf, ok := bufPool.Get().(*Buffer)
+	if !ok {
+		b := make([]byte, 0, bufferSize)
+
+		return (*Buffer)(&b)
+	}
+
+	return buf
 }
 
 func (b *Buffer) Free() {

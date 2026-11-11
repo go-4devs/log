@@ -440,13 +440,17 @@ func (v Value) Any() any {
 	return v.any
 }
 
-//nolint:forcetypeassert
 func (v Value) AsString() string {
 	if v.Kind != KindString {
 		return ""
 	}
 
-	return unsafe.String(v.any.(stringptr), v.num)
+	ptr, ok := v.any.(stringptr)
+	if !ok {
+		return ""
+	}
+
+	return unsafe.String(ptr, v.num)
 }
 
 func (v Value) AsBool() bool {
@@ -509,13 +513,17 @@ func (v Value) AsError() error {
 	return err
 }
 
-//nolint:forcetypeassert
 func (v Value) AsGroup() Fields {
 	if v.Kind != KindGroup {
 		return nil
 	}
 
-	return unsafe.Slice((*Field)(v.any.(groupptr)), v.num)
+	ptr, ok := v.any.(groupptr)
+	if !ok {
+		return nil
+	}
+
+	return unsafe.Slice((*Field)(ptr), v.num)
 }
 
 func (v Value) Resolve() any {
