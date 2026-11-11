@@ -273,11 +273,8 @@ func BytesValue(value []byte) Value {
 	return newValue(KindBinary, 0, 0, value)
 }
 
-//nolint:gochecknoglobals
-var nilValue = newValue(KindNil, 0, 0, nil)
-
 func NilValue() Value {
-	return nilValue
+	return newValue(KindNil, 0, 0, nil)
 }
 
 // AnyValue returns a Value for the supplied value.
