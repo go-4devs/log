@@ -469,8 +469,11 @@ func (v Value) AsUint64() uint64 {
 	return v.num
 }
 
-//nolint:gosec
 func (v Value) AsFloat32() float32 {
+	if v.num > math.MaxUint32 {
+		return 0
+	}
+
 	return math.Float32frombits(uint32(v.num))
 }
 
